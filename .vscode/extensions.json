@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "Ionide.Ionide-fsharp",
+    "paolodellepiane.fantomas-fmt",
+    "ms-vscode.csharp",
+    "EditorConfig.EditorConfig"
+  ]
+}
