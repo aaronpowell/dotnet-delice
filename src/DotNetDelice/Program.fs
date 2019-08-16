@@ -3,49 +3,8 @@ open System.IO
 open NuGet.ProjectModel
 open NuGet.Common
 open NuGet.Protocol
-open System.Diagnostics
-open System.Text
-open Newtonsoft.Json
-open Newtonsoft.Json.Linq
 open NuGet.Packaging.Core
-
-let generateDependencyGraph projectPath =
-    async {
-        let tempPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName())
-
-        let args =
-            [| "msbuild"
-               projectPath
-               "/t:GenerateRestoreGraphFile"
-               sprintf "/p:RestoreGraphOutputPath=%s" tempPath |]
-
-        let psi = ProcessStartInfo("/usr/bin/dotnet", args |> String.concat " ")
-        psi.WorkingDirectory <- Environment.CurrentDirectory
-        psi.UseShellExecute <- false
-        psi.CreateNoWindow <- true
-        psi.RedirectStandardOutput <- true
-        psi.RedirectStandardError <- true
-        let p = new Process()
-        p.StartInfo <- psi
-        p.Start() |> ignore
-        let rec consumeStream (reader : StreamReader) (output : StringBuilder) =
-            async {
-                let! line = reader.ReadLineAsync() |> Async.AwaitTask
-                match line with
-                | null -> return output
-                | l -> return! output.AppendLine l |> consumeStream reader
-            }
-
-        let oa = consumeStream p.StandardOutput (StringBuilder())
-        let ea = consumeStream p.StandardError (StringBuilder())
-        match p.WaitForExit 20000 with
-        | false ->
-            p.Kill()
-            return None
-        | true ->
-            let! _ = [| oa; ea |] |> Async.Parallel
-            return Some(File.ReadAllText tempPath)
-    }
+open DependencyGraph
 
 [<EntryPoint>]
 let main _ =
@@ -55,8 +14,7 @@ let main _ =
         |> Async.RunSynchronously
     match dg with
     | None -> printfn "whoops"
-    | Some s ->
-        let dependencyGraph = JsonConvert.DeserializeObject<JObject> s |> DependencyGraphSpec.Load
+    | Some dependencyGraph ->
         let projectSpec = dependencyGraph.Projects |> Seq.find (fun p -> p.Name = "DotNetDelice")
         let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
         let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
