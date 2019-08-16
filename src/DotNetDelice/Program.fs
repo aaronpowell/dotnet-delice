@@ -23,7 +23,7 @@ let main _ =
             licenses
             |> Seq.choose (fun l ->
                    match l with
-                   | Unlicensed l -> Some l
+                   | PackageNotFound l -> Some l
                    | _ -> None)
 
         let licensed =

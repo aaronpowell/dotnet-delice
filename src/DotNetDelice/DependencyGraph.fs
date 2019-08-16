@@ -18,6 +18,8 @@ let generateDependencyGraph projectPath =
         match! dotnetRun args with
         | result when result.IsSuccess ->
             let s = File.ReadAllText tempPath
-            return JsonConvert.DeserializeObject<JObject> s |> DependencyGraphSpec.Load |> Some
+            return JsonConvert.DeserializeObject<JObject> s
+                   |> DependencyGraphSpec.Load
+                   |> Some
         | _ -> return None
     }

@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="MemoryLogger.fs" />
     <Compile Include="DotNetCli.fs" />
     <Compile Include="DependencyGraph.fs" />
     <Compile Include="LicenseBuilder.fs" />

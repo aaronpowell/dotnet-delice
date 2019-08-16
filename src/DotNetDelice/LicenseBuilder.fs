@@ -20,19 +20,29 @@ type MissingLicense =
 type LicenseResult =
     | Licensed of LicenseMetadata
     | LegacyLicensed of LicenseMetadata
-    | Unlicensed of MissingLicense
+    | PackageNotFound of MissingLicense
+
+let rec private findPackage paths identity logger =
+    match paths with
+    | head :: rest ->
+        match LocalFolderUtility.GetPackageV3(head, identity, logger) with
+        | null -> findPackage rest identity logger
+        | pkg -> Some pkg
+    | [] -> None
 
 let getPackageLicense (projectSpec : PackageSpec) (lib : LockFileLibrary) =
     let identity = PackageIdentity(lib.Name, lib.Version)
-    let pId =
-        LocalFolderUtility.GetPackageV3
-            (projectSpec.RestoreMetadata.PackagesPath, identity, NuGet.Common.NullLogger.Instance)
-    match pId with
-    | null ->
+
+    let nugetPaths =
+        [| projectSpec.RestoreMetadata.PackagesPath |]
+        |> Seq.append projectSpec.RestoreMetadata.FallbackFolders
+        |> Seq.toList
+    match findPackage nugetPaths identity MemoryLogger.Instance with
+    | None ->
         { PackageName = lib.Name
           PackageVersion = lib.Version }
-        |> Unlicensed
-    | _ ->
+        |> PackageNotFound
+    | Some pId ->
         match pId.Nuspec.GetLicenseMetadata() with
         | null ->
             { Type = None
