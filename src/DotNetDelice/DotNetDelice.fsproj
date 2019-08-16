@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="DotNetCli.fs" />
     <Compile Include="DependencyGraph.fs" />
+    <Compile Include="LicenseBuilder.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

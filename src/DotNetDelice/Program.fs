@@ -2,9 +2,8 @@
 open System.IO
 open NuGet.ProjectModel
 open NuGet.Common
-open NuGet.Protocol
-open NuGet.Packaging.Core
 open DependencyGraph
+open LicenseBuilder
 
 [<EntryPoint>]
 let main _ =
@@ -18,22 +17,39 @@ let main _ =
         let projectSpec = dependencyGraph.Projects |> Seq.find (fun p -> p.Name = "DotNetDelice")
         let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
         let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
-        lockFile.Libraries
-        |> Seq.iter (fun lib ->
-               let identity = PackageIdentity(lib.Name, lib.Version)
-               let pi =
-                   LocalFolderUtility.GetPackageV3
-                       (projectSpec.RestoreMetadata.PackagesPath, identity, NullLogger.Instance)
-               match pi with
-               | null -> ignore()
-               | _ ->
-                   printfn "Looking for licence for %A" identity
-                   match pi.Nuspec.GetLicenseMetadata() with
-                   | null ->
-                       printfn "No licence metadata found"
-                       printfn "Legacy licence style via URL: %s" <| pi.Nuspec.GetLicenseUrl()
-                   | licence ->
-                       printfn "Licence metadata found"
-                       printfn "Licence: %A, Version: %A" licence.License licence.Version
-                   printfn "")
+        let licenses = lockFile.Libraries |> Seq.map (getPackageLicense projectSpec)
+
+        let unlicensed =
+            licenses
+            |> Seq.choose (fun l ->
+                   match l with
+                   | Unlicensed l -> Some l
+                   | _ -> None)
+
+        let licensed =
+            licenses
+            |> Seq.choose (fun l ->
+                   match l with
+                   | Licensed l -> Some l
+                   | _ -> None)
+
+        let legacyLicensed =
+            licenses
+            |> Seq.choose (fun l ->
+                   match l with
+                   | LegacyLicensed l -> Some l
+                   | _ -> None)
+
+        printfn "Unlicensed: %A" unlicensed
+        printfn "Licensed: %A" licensed
+        printfn "Legacy Licensed: %A" legacyLicensed
+        licensed
+        |> Seq.groupBy (fun license -> license.Type)
+        |> Seq.choose (fun (g, l) ->
+               match g with
+               | Some g -> Some(g, l)
+               | None -> None)
+        |> Seq.iter (fun (g, licenses) ->
+               printfn "License: %s" g
+               printfn "%A" licenses)
     0 // return an integer exit code
