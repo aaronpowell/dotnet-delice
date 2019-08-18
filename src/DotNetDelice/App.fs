@@ -62,44 +62,5 @@ type Cli() =
                    let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
                    let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
                    let licenses = lockFile.Libraries |> Seq.map (getPackageLicense projectSpec)
-
-                   let unlicensed =
-                       licenses
-                       |> Seq.choose (fun l ->
-                              match l with
-                              | PackageNotFound l -> Some l
-                              | _ -> None)
-
-                   let licensed =
-                       licenses
-                       |> Seq.choose (fun l ->
-                              match l with
-                              | Licensed l -> Some l
-                              | _ -> None)
-
-                   let legacyLicensed =
-                       licenses
-                       |> Seq.choose (fun l ->
-                              match l with
-                              | LegacyLicensed l -> Some l
-                              | _ -> None)
-
-                   printfn "Project %s" projectSpec.Name
-                   printfn "Unlicensed: %s" (unlicensed
-                                             |> Seq.map (fun l -> l.PackageName)
-                                             |> String.concat "; ")
-                   printfn "Legacy Licensed: %s" (legacyLicensed
-                                                  |> Seq.map (fun l -> l.PackageName)
-                                                  |> String.concat "; ")
-                   licensed
-                   |> Seq.groupBy (fun license -> license.Type)
-                   |> Seq.choose (fun (g, l) ->
-                          match g with
-                          | Some g -> Some(g, l)
-                          | None -> None)
-                   |> Seq.iter (fun (g, licenses) ->
-                          printfn "License name: %s" g
-                          printfn "%s" (licenses
-                                        |> Seq.map (fun l -> l.PackageName)
-                                        |> String.concat "; "))
+                   prettyPrint projectSpec licenses
                    printfn "")

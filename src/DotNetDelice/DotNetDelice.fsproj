@@ -7,12 +7,15 @@
     <Compile Include="MemoryLogger.fs" />
     <Compile Include="DotNetCli.fs" />
     <Compile Include="DependencyGraph.fs" />
+    <Compile Include="LicenseCache.fs" />
     <Compile Include="LicenseBuilder.fs" />
+    <Compile Include="Output.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.ProjectModel" Version="5.2.0" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.4" />
+    <PackageReference Include="BlackFox.ColoredPrintf" Version="1.0.3" />
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ open System
 open NuGet.Protocol
 open NuGet.Packaging.Core
 open NuGet.ProjectModel
+open LicenseCache
 
 type LicenseMetadata =
     { Type : string option
@@ -43,18 +44,24 @@ let getPackageLicense (projectSpec : PackageSpec) (lib : LockFileLibrary) =
           PackageVersion = lib.Version }
         |> PackageNotFound
     | Some pId ->
-        match pId.Nuspec.GetLicenseMetadata() with
-        | null ->
+        let licenseMetadata =
             { Type = None
               Version = None
               Url = pId.Nuspec.GetLicenseUrl()
               PackageName = lib.Name
               PackageVersion = lib.Version }
-            |> LegacyLicensed
+        match pId.Nuspec.GetLicenseMetadata() with
+        | null ->
+            match knownLicenseCache.TryFind <| lib.Name.ToLower() with
+            | Some cachedPkg ->
+                match cachedPkg.TryFind <| lib.Version.ToString() with
+                | Some v ->
+                    { licenseMetadata with Type = Some v
+                                           Version = None }
+                    |> Licensed
+                | None -> licenseMetadata |> LegacyLicensed
+            | None -> licenseMetadata |> LegacyLicensed
         | licence ->
-            { Type = Some licence.License
-              Version = Some licence.Version
-              Url = licence.LicenseUrl.ToString()
-              PackageName = lib.Name
-              PackageVersion = lib.Version }
+            { licenseMetadata with Type = Some licence.License
+                                   Version = Some licence.Version }
             |> Licensed
