@@ -52,14 +52,11 @@ let getPackageLicense (projectSpec : PackageSpec) (lib : LockFileLibrary) =
               PackageVersion = lib.Version }
         match pId.Nuspec.GetLicenseMetadata() with
         | null ->
-            match knownLicenseCache.TryFind <| lib.Name.ToLower() with
-            | Some cachedPkg ->
-                match cachedPkg.TryFind <| lib.Version.ToString() with
-                | Some v ->
-                    { licenseMetadata with Type = Some v
-                                           Version = None }
-                    |> Licensed
-                | None -> licenseMetadata |> LegacyLicensed
+            match knownLicenseCache.TryFind <| pId.Nuspec.GetLicenseUrl() with
+            | Some cachedLicense ->
+                { licenseMetadata with Type = Some cachedLicense.Expression
+                                       Version = None }
+                |> Licensed
             | None -> licenseMetadata |> LegacyLicensed
         | licence ->
             { licenseMetadata with Type = Some licence.License

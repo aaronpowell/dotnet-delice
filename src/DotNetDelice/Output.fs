@@ -10,6 +10,20 @@ type private PrintableLicense =
       Count : int
       Names : string seq }
 
+// hacky little function I use to code gen the cache
+let private licensesCodeGen legacyLicensed =
+    legacyLicensed
+    |> Seq.groupBy (fun l -> l.Url)
+    |> Seq.iter
+           (fun (url, pkgs) ->
+           printfn "(\"%s\", { Expression = \"\"; Packages = Map.ofList[%s]})" url (pkgs
+                                                                                    |> Seq.map
+                                                                                           (fun p ->
+                                                                                           sprintf "(\"%s\", [\"%A\"])"
+                                                                                               p.PackageName
+                                                                                               p.PackageVersion)
+                                                                                    |> String.concat "; "))
+
 let private prettyPrinter printable =
     colorprintfn "License Expression: $green[%s]" printable.Expression
     colorprintfn "├── There are $yellow[%d] occurances of $green[%s]" printable.Count printable.Expression
@@ -29,6 +43,7 @@ let prettyPrint (projectSpec : PackageSpec) licenses =
                match l with
                | PackageNotFound l -> Some l
                | _ -> None)
+        |> Seq.sortBy (fun l -> l.PackageName)
 
     let licensed =
         licenses
@@ -45,6 +60,7 @@ let prettyPrint (projectSpec : PackageSpec) licenses =
                match l with
                | LegacyLicensed l -> Some l
                | _ -> None)
+        |> Seq.sortBy (fun l -> l.PackageName)
 
     printfn "Project %s" projectSpec.Name
     if Seq.length unlicensed > 0 then
