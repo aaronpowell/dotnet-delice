@@ -52,7 +52,7 @@ stages:
                   command: push
                   nuGetFeedType: external
                   packagesToPush: $(Pipeline.Workspace)/$(packageArtifactName)/*.nupkg
-                  publishFeedCredentials: 'NuGet - dotnet-delice'
+                  externalEndpoints: 'NuGet - dotnet-delice'
 
     - deployment: GitHub
       displayName: Create GitHub release
