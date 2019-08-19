@@ -22,7 +22,7 @@ stages:
     - script: dotnet build --configuration $(buildConfiguration) -p:Version=$(packageVersion)
       displayName: 'dotnet build $(buildConfiguration)'
 
-    - script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration) -p:Version=$(packageVersion)
+    - script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration) -p:Version=$(packageVersion) -p:PackageReleaseNotes=$(releaseNotes)
       displayName: 'dotnet pack'
 
     - script: dotnet run --project src/DotNetDelice

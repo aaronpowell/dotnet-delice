@@ -25,6 +25,7 @@ Target.create "Changelog" (fun _ ->
   |> File.append "./.nupkg/changelog.md"
 
   printfn "##vso[task.setvariable variable=packageVersion]%s" changelog.LatestEntry.AssemblyVersion
+  printfn "##vso[task.setvariable variable=releaseNotes]\"%O\"" changelog.LatestEntry
 )
 
 Target.create "All" ignore
