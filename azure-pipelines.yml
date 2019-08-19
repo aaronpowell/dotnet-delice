@@ -3,19 +3,73 @@ trigger:
 
 pr: none
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
-  buildConfiguration: 'Release'
+  packageArtifactName: packages
 
-steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+stages:
+- stage: build
+  jobs:
+  - job:
+    pool:
+      vmImage: 'ubuntu-latest'
 
-- script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration)
-  displayName: 'dotnet pack'
+    variables:
+      buildConfiguration: 'Release'
+    steps:
+    - script: dotnet build --configuration $(buildConfiguration)
+      displayName: 'dotnet build $(buildConfiguration)'
 
-- publish: $(Build.SourcesDirectory)/.nupkg
-  displayName: Publish artifacts
-  artifact: packages
+    - script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration)
+      displayName: 'dotnet pack'
+
+    - publish: $(Build.SourcesDirectory)/.nupkg
+      displayName: Publish artifacts
+      artifact: $(packageArtifactName)
+
+- stage: Publish Release
+  jobs:
+    - deployment: NuGet
+      displayName: Publish tool to NuGet
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: nuget
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                artifact: $(packageArtifactName)
+
+              - task: DotNetCoreCLI@2
+                displayName: 'dotnet push'
+                enabled: false
+                inputs:
+                  command: push
+                  nuGetFeedType: external
+                  packagesToPush: $(Pipeline.Workspace)/$(packageArtifactName)
+                  publishFeedCredentials: 'NuGet - dotnet-delice'
+
+    - deployment: GitHub
+      displayName: Create GitHub release
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: nuget
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                artifact: $(packageArtifactName)
+
+              - task: GitHubRelease@0
+                displayName: 'Tag and release to GitHub'
+                enabled: false
+                inputs:
+                  gitHubConnection: ''
+                  repositoryName: 'aaronpowell/dotnet-delice'
+                  tagSource: manual
+                  tag: '$(packageVersion)'
+                  title: 'Release $(packageVersion)'
+                  releaseNotesSource: input
+                  releaseNotes: 'Refer to CHANGELOG.md for release $(packageVersion)'
+                  assets: $(Pipeline.Workspace)/$(packageArtifactName)
