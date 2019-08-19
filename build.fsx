@@ -19,6 +19,8 @@ Target.create "Build" (fun _ ->
 
 Target.create "Changelog" (fun _ ->
   let changelog = "CHANGELOG.md" |> Changelog.load
+  Directory.ensure "./.nupkg"
+
   [|sprintf "%O" changelog.LatestEntry|]
   |> File.append "./.nupkg/changelog.md"
 
