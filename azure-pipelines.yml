@@ -1,6 +1,8 @@
 trigger:
 - master
 
+pr: none
+
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -10,10 +12,10 @@ variables:
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
 - script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration)
   displayName: 'dotnet pack'
-- task: PublishPipelineArtifact@1
+
+- publish: ./.nukpg
   displayName: Publish artifacts
-  inputs:
-    pathtoPublish: ./.nukpg
-    artifactName: packages
+  artifact: packages

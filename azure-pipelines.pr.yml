@@ -1,0 +1,23 @@
+trigger:
+  branches:
+    exclude:
+      - master
+pr:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- script: dotnet build --configuration $(buildConfiguration) --version-suffix 'beta-pr$(System.PullRequest.PullRequestId)'
+  displayName: 'dotnet build $(buildConfiguration)'
+
+- script: dotnet pack --no-build --no-restore --version-suffix 'beta-pr$(System.PullRequest.PullRequestId)' --configuration $(buildConfiguration)
+  displayName: 'dotnet pack'
+
+- publish: ./.nukpg
+  displayName: Publish artifacts
+  artifact: packages
