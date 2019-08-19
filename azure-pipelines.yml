@@ -48,7 +48,6 @@ stages:
 
               - task: DotNetCoreCLI@2
                 displayName: 'dotnet push'
-                enabled: false
                 inputs:
                   command: push
                   nuGetFeedType: external
@@ -73,7 +72,6 @@ stages:
 
               - task: GitHubRelease@0
                 displayName: 'Tag and release to GitHub'
-                enabled: false
                 inputs:
                   gitHubConnection: 'GitHub - dotnet-delice'
                   repositoryName: 'aaronpowell/dotnet-delice'
