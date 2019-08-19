@@ -6,6 +6,7 @@ open BlackFox.ColoredPrintf.ColoredPrintf
 open NuGet.ProjectModel
 open Newtonsoft.Json
 open Newtonsoft.Json.Serialization
+open System.IO
 
 [<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
 type PrintableLicense =
@@ -149,4 +150,11 @@ let jsonBuilder (projectSpec : PackageSpec) licenses =
 type ProjectOutput =
     { Projects : PackageOutput seq }
 
-let jsonPrinter json = JsonConvert.SerializeObject({ Projects = json }, Formatting.Indented) |> printfn "%s"
+let jsonPrinter path json =
+    let j = JsonConvert.SerializeObject({ Projects = json }, Formatting.Indented)
+
+    match path with
+    | ""
+    | null ->  printfn "%s" j
+    | _ ->
+        File.WriteAllText(path, j)

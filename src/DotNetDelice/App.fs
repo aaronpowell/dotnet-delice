@@ -45,6 +45,9 @@ type Cli() =
     [<OptionAttribute(Description = "Output result as JSON")>]
     member val Json = false with get, set
 
+    [<OptionAttribute("--json-output", Description = "Path to JSON file rather than stdout")>]
+    member val JsonOutput = "" with get, set
+
     member this.OnExecute() =
         let path =
             match this.Path with
@@ -67,7 +70,7 @@ type Cli() =
                        let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
                        let licenses = lockFile.Libraries |> Seq.map (getPackageLicense projectSpec)
                        jsonBuilder projectSpec licenses)
-                |> jsonPrinter
+                |> jsonPrinter this.JsonOutput
             else
                 dependencyGraph.Projects
                 |> Seq.iter (fun projectSpec ->
