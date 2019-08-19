@@ -16,6 +16,6 @@ steps:
 - script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration)
   displayName: 'dotnet pack'
 
-- publish: ./.nukpg
+- publish: $(Build.SourcesDirectory)/.nupkg
   displayName: Publish artifacts
   artifact: packages

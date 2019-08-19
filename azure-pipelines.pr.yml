@@ -18,6 +18,6 @@ steps:
 - script: dotnet pack --no-build --no-restore --version-suffix 'beta-pr$(System.PullRequest.PullRequestId)' --configuration $(buildConfiguration)
   displayName: 'dotnet pack'
 
-- publish: ./.nukpg
+- publish: $(Build.SourcesDirectory)/.nupkg
   displayName: Publish artifacts
   artifact: packages
