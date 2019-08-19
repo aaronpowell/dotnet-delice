@@ -46,7 +46,7 @@ stages:
           deploy:
             steps:
               - script: |
-                  echo "Variable from build: $[ dependencies.build.outputs[ 'job1.changelog.packageVersion' ] ]"
+                  echo "Variable from build: $[ dependencies.Build.outputs[ 'job1.changelog.packageVersion' ] ]"
                 displayName: Output variables
 
     - deployment: NuGet
