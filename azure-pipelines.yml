@@ -36,7 +36,7 @@ stages:
 - stage: release
   jobs:
     - deployment: varTest
-      dependsOn: build
+      dependsOn: Build
       displayName: Just some testing
       pool:
         vmImage: 'ubuntu-latest'
