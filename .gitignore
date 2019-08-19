@@ -2,3 +2,6 @@ bin/
 obj/
 .ionide/
 .nupkg/
+.fake/
+paket-files/
+.paket/
