@@ -26,7 +26,7 @@ stages:
       displayName: Publish artifacts
       artifact: $(packageArtifactName)
 
-- stage: Publish Release
+- stage: PublishRelease
   jobs:
     - deployment: NuGet
       displayName: Publish tool to NuGet
