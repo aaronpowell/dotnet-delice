@@ -22,6 +22,9 @@ stages:
     - script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration)
       displayName: 'dotnet pack'
 
+    - script: dotnet run --project src/DotNetDelice
+      displayName: Smoke test and example run
+
     - script: ./fake.sh run build.fsx --target Changelog
       displayName: Generate changelog
 
