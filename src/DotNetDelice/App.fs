@@ -42,6 +42,9 @@ type Cli() =
                Description = "The path to a .sln, .csproj or .fsproj file, or to a directory containing a .NET Core solution/project. If none is specified, the current directory will be used.")>]
     member val Path = "" with get, set
 
+    [<OptionAttribute(Description = "Output result as JSON")>]
+    member val Json = false with get, set
+
     member this.OnExecute() =
         let path =
             match this.Path with
@@ -57,10 +60,19 @@ type Cli() =
         match dg with
         | None -> printfn "whoops"
         | Some dependencyGraph ->
-            dependencyGraph.Projects
-            |> Seq.iter (fun projectSpec ->
-                   let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
-                   let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
-                   let licenses = lockFile.Libraries |> Seq.map (getPackageLicense projectSpec)
-                   prettyPrint projectSpec licenses
-                   printfn "")
+            if this.Json then
+                dependencyGraph.Projects
+                |> Seq.map (fun projectSpec ->
+                       let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
+                       let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
+                       let licenses = lockFile.Libraries |> Seq.map (getPackageLicense projectSpec)
+                       jsonBuilder projectSpec licenses)
+                |> jsonPrinter
+            else
+                dependencyGraph.Projects
+                |> Seq.iter (fun projectSpec ->
+                       let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
+                       let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
+                       let licenses = lockFile.Libraries |> Seq.map (getPackageLicense projectSpec)
+                       prettyPrint projectSpec licenses
+                       printfn "")

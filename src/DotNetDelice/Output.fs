@@ -4,8 +4,11 @@ module Output
 open LicenseBuilder
 open BlackFox.ColoredPrintf.ColoredPrintf
 open NuGet.ProjectModel
+open Newtonsoft.Json
+open Newtonsoft.Json.Serialization
 
-type private PrintableLicense =
+[<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
+type PrintableLicense =
     { Expression : string
       Count : int
       Names : string seq }
@@ -86,3 +89,64 @@ let prettyPrint (projectSpec : PackageSpec) licenses =
                  Names = packages |> Seq.map (fun p -> p.PackageName) })
         |> Seq.iter prettyPrinter
     ignore()
+
+[<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
+type PackageOutput =
+    { ProjectName : string
+      Licenses : PrintableLicense seq }
+
+let jsonBuilder (projectSpec : PackageSpec) licenses =
+    let unlicensed =
+        licenses
+        |> Seq.choose (fun l ->
+               match l with
+               | PackageNotFound l -> Some l
+               | _ -> None)
+        |> Seq.sortBy (fun l -> l.PackageName)
+
+    let licensed =
+        licenses
+        |> Seq.choose (fun l ->
+               match l with
+               | Licensed l -> Some l
+               | _ -> None)
+        |> Seq.sortBy (fun l -> l.PackageName)
+        |> Seq.groupBy (fun license -> license.Type)
+
+    let legacyLicensed =
+        licenses
+        |> Seq.choose (fun l ->
+               match l with
+               | LegacyLicensed l -> Some l
+               | _ -> None)
+        |> Seq.sortBy (fun l -> l.PackageName)
+
+    let pl =
+        Seq.append (if Seq.length unlicensed > 0 then
+                        [| { Expression = "Missing"
+                             Count = Seq.length unlicensed
+                             Names = unlicensed |> Seq.map (fun l -> l.PackageName) } |]
+                    else [||]) (if Seq.length legacyLicensed > 0 then
+                                    [| { Expression = "Unable to determine"
+                                         Count = Seq.length legacyLicensed
+                                         Names =
+                                             legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url) } |]
+                                else [||])
+
+    { ProjectName = projectSpec.Name
+      Licenses =
+          licensed
+          |> Seq.map (fun (license, packages) ->
+                 { Expression =
+                       match license with
+                       | Some l -> l
+                       | None -> "No License"
+                   Count = Seq.length packages
+                   Names = packages |> Seq.map (fun p -> p.PackageName) })
+          |> Seq.append pl }
+
+[<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
+type ProjectOutput =
+    { Projects : PackageOutput seq }
+
+let jsonPrinter json = JsonConvert.SerializeObject({ Projects = json }, Formatting.Indented) |> printfn "%s"
