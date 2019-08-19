@@ -4,6 +4,6 @@
 let main args =
     let app = new CommandLineApplication<Cli>()
     app.ThrowOnUnexpectedArgument <- false
-    app.Conventions.UseDefaultConventions().UseAttributes() |> ignore
+    app.Conventions.UseDefaultConventions() |> ignore
 
     app.Execute args
