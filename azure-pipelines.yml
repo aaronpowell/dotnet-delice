@@ -9,7 +9,7 @@ variables:
 stages:
 - stage: build
   jobs:
-  - job:
+  - job: Build
     pool:
       vmImage: 'ubuntu-latest'
 
@@ -27,6 +27,7 @@ stages:
 
     - script: ./fake.sh run build.fsx --target Changelog
       displayName: Generate changelog
+      name: changelog
 
     - publish: $(Build.SourcesDirectory)/.nupkg
       displayName: Publish artifacts
@@ -35,6 +36,7 @@ stages:
 - stage: release
   jobs:
     - deployment: varTest
+      dependsOn: build
       displayName: Just some testing
       pool:
         vmImage: 'ubuntu-latest'
@@ -44,7 +46,7 @@ stages:
           deploy:
             steps:
               - script: |
-                  echo "Variable from build: $(packageVersion)"
+                  echo "Variable from build: $[ dependencies.build.outputs[ 'job1.changelog.packageVersion' ] ]"
                 displayName: Output variables
 
     - deployment: NuGet
