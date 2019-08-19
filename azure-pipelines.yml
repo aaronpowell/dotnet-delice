@@ -28,6 +28,12 @@ stages:
     - script: ./fake.sh run build.fsx --target Changelog
       displayName: Generate changelog
 
+    - script: ./fake.sh run build.fsx --target VarTest
+      displayName: Generate changelog
+
+    - script: |
+        echo "Value of $(testVar)"
+
     - publish: $(Build.SourcesDirectory)/.nupkg
       displayName: Publish artifacts
       artifact: $(packageArtifactName)

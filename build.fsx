@@ -23,6 +23,9 @@ Target.create "Changelog" (fun _ ->
   |> File.append "./.nupkg/changelog.md"
 )
 
+Target.create "VarTest" (fun _ ->
+  printfn "##vso[task.setvariable variable=testVar]Some Value")
+
 Target.create "All" ignore
 
 "Clean"
