@@ -10,14 +10,21 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  versionSuffix: 'beta-pr$(System.PullRequest.PullRequestId)'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration) --version-suffix 'beta-pr$(System.PullRequest.PullRequestId)'
+- script: ./fake.sh run build.fsx --target Changelog
+  displayName: Generate changelog
+
+- script: dotnet build --configuration $(buildConfiguration) -p:Version=$(packageVersion) --version-suffix $(versionSuffix)
   displayName: 'dotnet build $(buildConfiguration)'
 
-- script: dotnet pack --no-build --no-restore --version-suffix 'beta-pr$(System.PullRequest.PullRequestId)' --configuration $(buildConfiguration)
+- script: dotnet pack --no-build --no-restore --configuration $(buildConfiguration) -p:Version=$(packageVersion) --version-suffix $(versionSuffix)
   displayName: 'dotnet pack'
+
+- script: dotnet run --project src/DotNetDelice
+  displayName: Smoke test and example run
 
 - publish: $(Build.SourcesDirectory)/.nupkg
   displayName: Publish artifacts
-  artifact: packages
+  artifact: $(packageArtifactName)
