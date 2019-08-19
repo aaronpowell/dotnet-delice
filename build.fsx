@@ -21,10 +21,9 @@ Target.create "Changelog" (fun _ ->
   let changelog = "CHANGELOG.md" |> Changelog.load
   [|sprintf "%O" changelog.LatestEntry|]
   |> File.append "./.nupkg/changelog.md"
-)
 
-Target.create "VarTest" (fun _ ->
-  printfn "##vso[task.setvariable variable=testVar]Some Value")
+  printfn "##vso[task.setvariable variable=packageVersion]%s" changelog.LatestEntry.AssemblyVersion
+)
 
 Target.create "All" ignore
 
