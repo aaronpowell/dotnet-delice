@@ -24,8 +24,11 @@ Target.create "Changelog" (fun _ ->
   [|sprintf "%O" changelog.LatestEntry|]
   |> File.append "./.nupkg/changelog.md"
 
+  let s = sprintf "%O" changelog.LatestEntry
+
   printfn "##vso[task.setvariable variable=packageVersion]%s" changelog.LatestEntry.AssemblyVersion
-  printfn "##vso[task.setvariable variable=releaseNotes]\"%O\"" changelog.LatestEntry
+
+  Templates.replaceInFiles ["@releaseNotes@", s] [ "./src/DotNetDelice/DotNetDelice.fsproj" ]
 )
 
 Target.create "All" ignore

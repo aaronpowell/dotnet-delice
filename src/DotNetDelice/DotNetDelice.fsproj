@@ -14,6 +14,7 @@
     <Title>DotNet Delice</Title>
     <PackageDescription>Delice is a dotnet tool that will list out the license information of the packages that your project depends on to help you get a better idea of what licenses are in use by your project.</PackageDescription>
     <Authors>aaron.powell</Authors>
+    <PackageReleaseNotes>@releaseNotes@</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MemoryLogger.fs" />
