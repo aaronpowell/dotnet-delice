@@ -26,7 +26,7 @@ stages:
       displayName: Publish artifacts
       artifact: $(packageArtifactName)
 
-- stage: PublishRelease
+- stage: release
   jobs:
     - deployment: NuGet
       displayName: Publish tool to NuGet
@@ -53,7 +53,7 @@ stages:
       displayName: Create GitHub release
       pool:
         vmImage: 'ubuntu-latest'
-      environment: nuget
+      environment: github
       strategy:
         runOnce:
           deploy:
