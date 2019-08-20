@@ -31,7 +31,7 @@ let rec private findPackage paths identity logger =
         | pkg -> Some pkg
     | [] -> None
 
-let getPackageLicense (projectSpec : PackageSpec) (lib : LockFileLibrary) =
+let getPackageLicense (projectSpec : PackageSpec) checkGitHub token (lib : LockFileLibrary) =
     let identity = PackageIdentity(lib.Name, lib.Version)
 
     let nugetPaths =
@@ -52,12 +52,20 @@ let getPackageLicense (projectSpec : PackageSpec) (lib : LockFileLibrary) =
               PackageVersion = lib.Version }
         match pId.Nuspec.GetLicenseMetadata() with
         | null ->
-            match knownLicenseCache.TryFind <| pId.Nuspec.GetLicenseUrl() with
-            | Some cachedLicense ->
+            match (checkGitHub, knownLicenseCache.TryFind <| pId.Nuspec.GetLicenseUrl()) with
+            | (_, Some cachedLicense) ->
                 { licenseMetadata with Type = Some cachedLicense.Expression
                                        Version = None }
                 |> Licensed
-            | None -> licenseMetadata |> LegacyLicensed
+            | (true, None) ->
+                match checkLicenseViaGitHub token <| pId.Nuspec.GetLicenseUrl() with
+                | Some cachedLicense ->
+                    { licenseMetadata with Type = Some cachedLicense.Expression
+                                           Version = None }
+                    |> Licensed
+                | None ->
+                    licenseMetadata |> LegacyLicensed
+            | (false, None) -> licenseMetadata |> LegacyLicensed
         | licence ->
             { licenseMetadata with Type = Some licence.License
                                    Version = Some licence.Version }

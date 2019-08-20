@@ -1,5 +1,7 @@
 module LicenseCache
 
+open System.Text.RegularExpressions
+
 // This is a lookup against a number of standard projects and their license type.
 // The NuGet versions here use the legacy license format, so the URL is the only
 // thing that will tell you what the license is. This cache means we don't have
@@ -76,7 +78,7 @@ let knownLicenseCache =
                   { Expression = "MIT"
                     Packages = Map.ofList [ ("Newtonsoft.Json", [ "9.0.1" ]) ] })
                  ("https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt",
-                  { Expression = "Apache License 2.0"
+                  { Expression = "Apache-2.0"
                     Packages =
                         Map.ofList [ ("Microsoft.AspNetCore", [ "2.2.0" ])
                                      ("Microsoft.AspNetCore.Antiforgery", [ "2.2.0" ])
@@ -158,3 +160,52 @@ let knownLicenseCache =
                                      ("Microsoft.Azure.WebJobs.Extensions.Storage", [ "3.0.5" ])
                                      ("Microsoft.Azure.WebJobs.Host.Storage", [ "3.0.6" ])
                                      ("Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator", [ "1.1.0" ]) ] }) ]
+
+open FSharp.Data
+
+type LicenseResponse = JsonProvider<""" { "license": { "key": "", "name": "", "spdx_id": "" } } """>
+
+let mutable private githubCache = Map.empty<string, LicenseCache>
+let mutable private githubNoAssertion = List.empty<string>
+
+let (|CompiledMatch|_|) pattern input =
+    if isNull input then None
+    else
+        let m = Regex.Match(input, pattern, RegexOptions.Compiled)
+        if m.Success then
+            Some [ for x in m.Groups -> x ]
+        else None
+
+let checkLicenseViaGitHub token licenseUrl =
+    match githubCache.TryFind licenseUrl with
+    | Some cache -> Some cache
+    | None ->
+        if githubNoAssertion |> List.contains licenseUrl then None
+        else
+            match licenseUrl with
+            | CompiledMatch ".*(github|githubusercontent)\.com\/([\w\-]*)\/([\w\-_\.]*)\/.*"
+              [ _; _; orgGroup; repoGroup ] ->
+                let org = orgGroup.Value
+                let repo = repoGroup.Value
+
+                let headers =
+                    [ "User-Agent", "dotnet-delice" ]
+                    |> List.append (match token with
+                                    | null
+                                    | "" -> []
+                                    | _ -> [ "Authorization", sprintf "token %s" token ])
+
+                let res =
+                    Http.RequestString(sprintf "https://api.github.com/repos/%s/%s/license" org repo, headers = headers)
+                    |> LicenseResponse.Parse
+                if res.License.SpdxId.JsonValue.AsString() = "NOASSERTION" then
+                    // this is what the GitHub API returns if it can't determine the license of a repository
+                    githubNoAssertion <- licenseUrl :: githubNoAssertion
+                    None
+                else
+                    let lc =
+                        { Expression = res.License.SpdxId.JsonValue.AsString()
+                          Packages = Map.ofList [ (repo, []) ] }
+                    githubCache <- githubCache.Add(licenseUrl, lc)
+                    Some lc
+            | _ -> None
