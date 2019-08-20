@@ -20,9 +20,11 @@ dotnet delice [folder, sln, csproj, fsproj]
 
 ## Commands
 
-- `-?|-h|--help` Boolean. Show help
-- `-j|--json` Boolean. Output results as JSON rather than pretty-print
+- `-?|-h|--help` Boolean. Show help.
+- `-j|--json` Boolean. Output results as JSON rather than pretty-print.
 - `--json-output [path]` String. Path to file that the JSON should be written to. Note: Only in use if you use `-j|--json`.
+- `--check-github` Boolean. If the license URL (for a legacy package) points to a GitHub hosted file, use the GitHub API to try and retrieve the license type.
+- `--github-token <token>` String. A GitHub Personal Access Token (PAT) to use when checking the GitHub API for license types. This avoids being [rate limited](https://developer.github.com/v3/#rate-limiting) when checking a project.
 
 ## Output
 
@@ -56,7 +58,7 @@ License Expression: MIT
 # Roadmap
 
 - Attempt to determine license from license file
-  - Use the GitHub API (if a GitHub repo) or basic file parsing to detect license info (see [undetermined licenses](#undetermined-licenses))
+  - ~Use the GitHub API (if a GitHub repo) or~ basic file parsing to detect license info (see [undetermined licenses](#undetermined-licenses))
 - Show conformance info from the licenses
 - Ability to filter for only a particular license
 - Anything you'd like? Open an [issue](https://github.com/aaronpowell/dotnet-delice/issues) 😁

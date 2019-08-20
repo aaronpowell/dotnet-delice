@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- Support for looking up a license via the GitHub API when the license is hosted on GitHub
+  - This reduces the number of packages that return "Unable to determine"
+  - User is able to provide a GitHub Personal Access Token (PAT) to avoid being rate-limited
+
 ### Changed
 
 - Extracted the core of the project out to a separate project so it can be its own NuGet package
