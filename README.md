@@ -71,7 +71,7 @@ Some NuGet packages have moved over to the new format, but many of them are stil
 
 ## Common License Cache
 
-The file [`LicenseCache.fs`](blob/master/src/DotNetDelice/LicenseCache.fs) contains a map of commonly used packages and the license file that they have. This means that delice can determine more licenses out of the box.
+The file [`LicenseCache.fs`](src/DotNetDelice/LicenseCache.fs) contains a map of commonly used packages and the license file that they have. This means that delice can determine more licenses out of the box.
 
 If you're coming across packages that you think should be in there, open a Pull Request with the updates.
 
