@@ -1,36 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <IsPackable>true</IsPackable>
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>dotnet-delice</ToolCommandName>
-    <AssemblyName>dotnet-delice</AssemblyName>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageOutputPath>../../.nupkg</PackageOutputPath>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/aaronpowell/dotnet-delice.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <Title>DotNet Delice</Title>
-    <PackageDescription>Delice is a dotnet tool that will list out the license information of the packages that your project depends on to help you get a better idea of what licenses are in use by your project.</PackageDescription>
+    <Title>DotNet Delice Licensing</Title>
+    <PackageDescription>Delice.Licensing is used to extract license information from .NET projects.</PackageDescription>
     <Authors>aaron.powell</Authors>
     <PackageReleaseNotes>@releaseNotes@</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Output.fs" />
-    <Compile Include="App.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="MemoryLogger.fs" />
+    <Compile Include="DotNetCli.fs" />
+    <Compile Include="DependencyGraph.fs" />
+    <Compile Include="LicenseCache.fs" />
+    <Compile Include="LicenseBuilder.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.ProjectModel" Version="5.2.0" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.4" />
-    <PackageReference Include="BlackFox.ColoredPrintf" Version="1.0.3" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetDelice.Licensing\DotNetDelice.Licensing.fsproj" />
   </ItemGroup>
 </Project>

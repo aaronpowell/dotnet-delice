@@ -28,7 +28,7 @@ Target.create "Changelog" (fun _ ->
 
   printfn "##vso[task.setvariable variable=packageVersion]%s" changelog.LatestEntry.AssemblyVersion
 
-  Templates.replaceInFiles ["@releaseNotes@", s] [ "./src/DotNetDelice/DotNetDelice.fsproj" ]
+  Templates.replaceInFiles ["@releaseNotes@", s] [ "./src/DotNetDelice/DotNetDelice.fsproj"; "./src/DotNetDelice.Licensing/DotNetDelice.Licensing.fsproj" ]
 )
 
 Target.create "All" ignore
