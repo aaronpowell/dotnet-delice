@@ -31,7 +31,7 @@ let rec private findPackage paths identity logger =
         | pkg -> Some pkg
     | [] -> None
 
-let getPackageLicense (projectSpec : PackageSpec) checkGitHub token (lib : LockFileLibrary) =
+let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicenseContent (lib : LockFileLibrary) =
     let identity = PackageIdentity(lib.Name, lib.Version)
 
     let nugetPaths =
@@ -65,14 +65,14 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token (lib : LockF
                                            Version = None }
                     |> Licensed
                 | None ->
-                    match checkLicenseContents lib.Name url with
+                    match checkLicenseContents checkLicenseContent lib.Name url with
                     | Some cachedLicense ->
                         { licenseMetadata with Type = Some cachedLicense.Expression
                                                Version = None }
                         |> Licensed
                     | None -> licenseMetadata |> LegacyLicensed
             | (false, None) ->
-                match checkLicenseContents lib.Name url with
+                match checkLicenseContents checkLicenseContent lib.Name url with
                 | Some cachedLicense ->
                     { licenseMetadata with Type = Some cachedLicense.Expression
                                            Version = None }

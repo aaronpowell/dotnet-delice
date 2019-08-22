@@ -35,10 +35,10 @@ let findProject path =
             | _ -> failwith "More than one project files found in the path"
         | _ -> failwith "More than one solution file found in the path"
 
-let getLicenses checkGitHub token (projectSpec : PackageSpec) =
+let getLicenses checkGitHub token checkLicenseContent (projectSpec : PackageSpec) =
     let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
     let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
-    lockFile.Libraries |> Seq.map (getPackageLicense projectSpec checkGitHub token)
+    lockFile.Libraries |> Seq.map (getPackageLicense projectSpec checkGitHub token checkLicenseContent)
 
 [<HelpOption>]
 type Cli() =
@@ -58,6 +58,9 @@ type Cli() =
     [<OptionAttribute("--github-token", Description = "A GitHub Personal Access Token to perform authenticated requests against the API (used with --check-github). This ensures the tool isn't rate-limited when running")>]
     member val GitHubToken = "" with get, set
 
+    [<OptionAttribute("--check-license-content", Description = "When set delice will attempt to look at the license text and match it against some known license templates")>]
+    member val CheckLicenseContent = false with get, set
+
 
     member this.OnExecute() =
         let path =
@@ -74,7 +77,7 @@ type Cli() =
         match dg with
         | None -> printfn "whoops"
         | Some dependencyGraph ->
-            let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken
+            let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken this.CheckLicenseContent
             if this.Json then
                 dependencyGraph.Projects
                 |> Seq.map (fun projectSpec ->

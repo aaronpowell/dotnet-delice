@@ -231,25 +231,28 @@ let private convertIfGitHub (licenseUrl : string) =
         Regex.Replace(licenseUrl, "^https?:\/\/github\.com", "https://raw.githubusercontent.com").Replace("/blob/", "/")
     else licenseUrl
 
-let checkLicenseContents packageName licenseUrl =
-    match dynamicLicenseCache.TryFind licenseUrl with
-    | Some lc -> Some lc
-    | None ->
-        if failedUrls |> List.contains licenseUrl then None
-        else
-            try
-                let licenseContents = convertIfGitHub licenseUrl |> Http.RequestString
-                match descriptions
-                      |> Map.tryFindKey (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.8) with
-                | Some key ->
-                    let lc =
-                        { Expression = key
-                          Packages = Map.ofList [ (packageName, []) ] }
-                    dynamicLicenseCache <- dynamicLicenseCache.Add(licenseUrl, lc)
-                    Some lc
-                | None ->
+let checkLicenseContents checkLicenseContent packageName licenseUrl =
+    if not checkLicenseContent then None
+    else
+        match dynamicLicenseCache.TryFind licenseUrl with
+        | Some lc -> Some lc
+        | None ->
+            if failedUrls |> List.contains licenseUrl then None
+            else
+                try
+                    let licenseContents = convertIfGitHub licenseUrl |> Http.RequestString
+                    match descriptions
+                          |> Map.tryFindKey
+                                 (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.98) with
+                    | Some key ->
+                        let lc =
+                            { Expression = key
+                              Packages = Map.ofList [ (packageName, []) ] }
+                        dynamicLicenseCache <- dynamicLicenseCache.Add(licenseUrl, lc)
+                        Some lc
+                    | None ->
+                        failedUrls <- licenseUrl :: failedUrls
+                        None
+                with _ ->
                     failedUrls <- licenseUrl :: failedUrls
                     None
-            with _ ->
-                failedUrls <- licenseUrl :: failedUrls
-                None
