@@ -25,6 +25,7 @@ dotnet delice [folder, sln, csproj, fsproj]
 - `--json-output [path]` String. Path to file that the JSON should be written to. Note: Only in use if you use `-j|--json`.
 - `--check-github` Boolean. If the license URL (for a legacy package) points to a GitHub hosted file, use the GitHub API to try and retrieve the license type.
 - `--github-token <token>` String. A GitHub Personal Access Token (PAT) to use when checking the GitHub API for license types. This avoids being [rate limited](https://developer.github.com/v3/#rate-limiting) when checking a project.
+- `--check-license-content` Boolean. When provided the contents of the license file will be compared to known templates.
 
 ## Output
 
