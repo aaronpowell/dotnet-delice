@@ -165,7 +165,7 @@ open FSharp.Data
 
 type LicenseResponse = JsonProvider<""" { "license": { "key": "", "name": "", "spdx_id": "" } } """>
 
-let mutable private githubCache = Map.empty<string, LicenseCache>
+let mutable private dynamicLicenseCache = Map.empty<string, LicenseCache>
 let mutable private githubNoAssertion = List.empty<string>
 
 let (|CompiledMatch|_|) pattern input =
@@ -177,7 +177,7 @@ let (|CompiledMatch|_|) pattern input =
         else None
 
 let checkLicenseViaGitHub token licenseUrl =
-    match githubCache.TryFind licenseUrl with
+    match dynamicLicenseCache.TryFind licenseUrl with
     | Some cache -> Some cache
     | None ->
         if githubNoAssertion |> List.contains licenseUrl then None
@@ -206,6 +206,50 @@ let checkLicenseViaGitHub token licenseUrl =
                     let lc =
                         { Expression = res.License.SpdxId.JsonValue.AsString()
                           Packages = Map.ofList [ (repo, []) ] }
-                    githubCache <- githubCache.Add(licenseUrl, lc)
+                    dynamicLicenseCache <- dynamicLicenseCache.Add(licenseUrl, lc)
                     Some lc
             | _ -> None
+
+open CommonLicenseDescriptions
+
+// adapted from https://lucidjargon.wordpress.com/2010/11/29/dices-coefficient-in-f/
+let bigrams (s : string) =
+    s.ToLower().ToCharArray().[0..s.Length - 2]
+    |> Array.fold (fun (set : Set<string>, i) c -> set.Add(c.ToString() + s.[i + 1].ToString()), i + 1) (Set.empty, 0)
+    |> fst
+
+let diceCoefficient (a : string) (b : string) =
+    let f str = str |> Array.fold (fun fset arr -> Set.union fset (bigrams arr)) Set.empty
+    let s1 = a.Split(' ') |> f
+    let s2 = b.Split(' ') |> f
+    2. * float ((Set.intersect s1 s2).Count) / float (s1.Count + s2.Count)
+
+let mutable private failedUrls = List.empty<string>
+
+let private convertIfGitHub (licenseUrl : string) =
+    if Regex.IsMatch(licenseUrl, "^https?:\/\/github\.com") then
+        Regex.Replace(licenseUrl, "^https?:\/\/github\.com", "https://raw.githubusercontent.com").Replace("/blob/", "/")
+    else licenseUrl
+
+let checkLicenseContents packageName licenseUrl =
+    match dynamicLicenseCache.TryFind licenseUrl with
+    | Some lc -> Some lc
+    | None ->
+        if failedUrls |> List.contains licenseUrl then None
+        else
+            try
+                let licenseContents = convertIfGitHub licenseUrl |> Http.RequestString
+                match descriptions
+                      |> Map.tryFindKey (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.8) with
+                | Some key ->
+                    let lc =
+                        { Expression = key
+                          Packages = Map.ofList [ (packageName, []) ] }
+                    dynamicLicenseCache <- dynamicLicenseCache.Add(licenseUrl, lc)
+                    Some lc
+                | None ->
+                    failedUrls <- licenseUrl :: failedUrls
+                    None
+            with _ ->
+                failedUrls <- licenseUrl :: failedUrls
+                None

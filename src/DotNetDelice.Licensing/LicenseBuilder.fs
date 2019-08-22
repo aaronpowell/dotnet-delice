@@ -52,20 +52,32 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token (lib : LockF
               PackageVersion = lib.Version }
         match pId.Nuspec.GetLicenseMetadata() with
         | null ->
-            match (checkGitHub, knownLicenseCache.TryFind <| pId.Nuspec.GetLicenseUrl()) with
+            let url = pId.Nuspec.GetLicenseUrl()
+            match checkGitHub, knownLicenseCache.TryFind url with
             | (_, Some cachedLicense) ->
                 { licenseMetadata with Type = Some cachedLicense.Expression
                                        Version = None }
                 |> Licensed
             | (true, None) ->
-                match checkLicenseViaGitHub token <| pId.Nuspec.GetLicenseUrl() with
+                match checkLicenseViaGitHub token url with
                 | Some cachedLicense ->
                     { licenseMetadata with Type = Some cachedLicense.Expression
                                            Version = None }
                     |> Licensed
                 | None ->
-                    licenseMetadata |> LegacyLicensed
-            | (false, None) -> licenseMetadata |> LegacyLicensed
+                    match checkLicenseContents lib.Name url with
+                    | Some cachedLicense ->
+                        { licenseMetadata with Type = Some cachedLicense.Expression
+                                               Version = None }
+                        |> Licensed
+                    | None -> licenseMetadata |> LegacyLicensed
+            | (false, None) ->
+                match checkLicenseContents lib.Name url with
+                | Some cachedLicense ->
+                    { licenseMetadata with Type = Some cachedLicense.Expression
+                                           Version = None }
+                    |> Licensed
+                | None -> licenseMetadata |> LegacyLicensed
         | licence ->
             { licenseMetadata with Type = Some licence.License
                                    Version = Some licence.Version }
