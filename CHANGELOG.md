@@ -1,6 +1,6 @@
 # Changelog for `dotnet-delice`
 
-## [Unreleased]
+## [1.1.0] - 2019-08-28
 
 ### Added
 
