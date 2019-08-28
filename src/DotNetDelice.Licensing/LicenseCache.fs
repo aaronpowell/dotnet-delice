@@ -232,7 +232,7 @@ let private convertIfGitHub (licenseUrl : string) =
     else licenseUrl
 
 let findMatchingLicense licenseContents =
-    descriptions |> Map.tryFindKey (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.98)
+    descriptions |> Map.tryFindKey (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.9)
 
 let checkLicenseContents packageName licenseUrl =
     match dynamicLicenseCache.TryFind licenseUrl with
