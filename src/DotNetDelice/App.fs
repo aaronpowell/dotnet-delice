@@ -8,6 +8,7 @@ open NuGet.ProjectModel
 open NuGet.Common
 open DependencyGraph
 open LicenseBuilder
+open Spdx
 
 let (|Proj|_|) arg =
     let c str = String.Compare(str, arg, StringComparison.OrdinalIgnoreCase) = 0
@@ -61,8 +62,13 @@ type Cli() =
     [<OptionAttribute("--check-license-content", Description = "When set delice will attempt to look at the license text and match it against some known license templates")>]
     member val CheckLicenseContent = false with get, set
 
+    [<OptionAttribute("--refresh-spdx", Description = "Refreshes the SPDX license.json file used by the tool")>]
+    member val RefreshSpdx = false with get, set
 
     member this.OnExecute() =
+        if this.RefreshSpdx then
+            getSpdx true |> Async.RunSynchronously |> ignore
+
         let path =
             match this.Path with
             | ""

@@ -8,10 +8,12 @@
   - This reduces the number of packages that return "Unable to determine"
   - User is able to provide a GitHub Personal Access Token (PAT) to avoid being rate-limited
 - Support for looking at the contents of the license file to see if we can guess the type
+- Showing license conformance with SPDX info (whether it's OSI, FSF, etc.). This is obtained from the SDPX database, which can be refreshed using a CLI flag
 
 ### Changed
 
 - Extracted the core of the project out to a separate project so it can be its own NuGet package
+- Output now contains a new node for conformance in the pretty-print, and three new nodes in JSON, `isOsi`, `isFsf` and `isDeprecatedType`
 
 ## [1.0.0] - 2019-08-19
 

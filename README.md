@@ -26,6 +26,7 @@ dotnet delice [folder, sln, csproj, fsproj]
 - `--check-github` Boolean. If the license URL (for a legacy package) points to a GitHub hosted file, use the GitHub API to try and retrieve the license type.
 - `--github-token <token>` String. A GitHub Personal Access Token (PAT) to use when checking the GitHub API for license types. This avoids being [rate limited](https://developer.github.com/v3/#rate-limiting) when checking a project.
 - `--check-license-content` Boolean. When provided the contents of the license file will be compared to known templates.
+- `--refresh-spdx` Boolean. When provided the tool will also refresh the SPDX license cache used for conformance infomation.
 
 ## Output
 
@@ -43,6 +44,10 @@ The following is an example of pretty-printed output:
 Project dotnet-delice
 License Expression: MIT
 ├── There are 10 occurances of MIT
+├─┬ Conformance:
+│ ├── Is OSI Approved: true
+│ ├── Is FSF Free/Libre: true
+│ └── Included deprecated IDs: false
 └─┬ Packages:
   ├── FSharp.Core
   ├── Microsoft.NETCore.App
@@ -58,9 +63,6 @@ License Expression: MIT
 
 # Roadmap
 
-- Attempt to determine license from license file
-  - ~Use the GitHub API (if a GitHub repo) or~ basic file parsing to detect license info (see [undetermined licenses](#undetermined-licenses))
-- Show conformance info from the licenses
 - Ability to filter for only a particular license
 - Anything you'd like? Open an [issue](https://github.com/aaronpowell/dotnet-delice/issues) 😁
 

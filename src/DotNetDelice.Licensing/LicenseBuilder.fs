@@ -30,22 +30,28 @@ let rec private findPackage paths identity logger =
     | head :: rest ->
         match LocalFolderUtility.GetPackageV3(head, identity, logger) with
         | null -> findPackage rest identity logger
-        | pkg -> Some (pkg, head)
+        | pkg -> Some(pkg, head)
     | [] -> None
+
 
 let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicenseContent (lib : LockFileLibrary) =
     let identity = PackageIdentity(lib.Name, lib.Version)
+
+    let checkLicenseContents' name url =
+        if checkLicenseContent then checkLicenseContents name url
+        else None
 
     let nugetPaths =
         [| projectSpec.RestoreMetadata.PackagesPath |]
         |> Seq.append projectSpec.RestoreMetadata.FallbackFolders
         |> Seq.toList
+
     match findPackage nugetPaths identity MemoryLogger.Instance with
     | None ->
         { PackageName = lib.Name
           PackageVersion = lib.Version }
         |> PackageNotFound
-    | Some (pId, path) ->
+    | Some(pId, path) ->
         let licenseMetadata =
             { Type = None
               Version = None
@@ -67,14 +73,14 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicense
                                            Version = None }
                     |> Licensed
                 | None ->
-                    match checkLicenseContents checkLicenseContent lib.Name url with
+                    match checkLicenseContents' lib.Name url with
                     | Some cachedLicense ->
                         { licenseMetadata with Type = Some cachedLicense.Expression
                                                Version = None }
                         |> Licensed
                     | None -> licenseMetadata |> LegacyLicensed
             | (false, None) ->
-                match checkLicenseContents checkLicenseContent lib.Name url with
+                match checkLicenseContents' lib.Name url with
                 | Some cachedLicense ->
                     { licenseMetadata with Type = Some cachedLicense.Expression
                                            Version = None }

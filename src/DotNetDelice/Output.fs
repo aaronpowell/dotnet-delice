@@ -7,12 +7,16 @@ open NuGet.ProjectModel
 open Newtonsoft.Json
 open Newtonsoft.Json.Serialization
 open System.IO
+open Spdx
 
 [<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
 type PrintableLicense =
     { Expression : string
       Count : int
-      Names : string seq }
+      Names : string seq
+      IsOsi : bool
+      IsFsf : bool
+      IsDeprecatedType : bool }
 
 // hacky little function I use to code gen the cache
 let private licensesCodeGen legacyLicensed =
@@ -31,6 +35,10 @@ let private licensesCodeGen legacyLicensed =
 let private prettyPrinter printable =
     colorprintfn "License Expression: $green[%s]" printable.Expression
     colorprintfn "├── There are $yellow[%d] occurances of $green[%s]" printable.Count printable.Expression
+    printfn "├─┬ Conformance:"
+    colorprintfn "│ ├── Is OSI Approved: $green[%b]" printable.IsOsi
+    colorprintfn "│ ├── Is FSF Free/Libre: $green[%b]" printable.IsFsf
+    colorprintfn "│ └── Included deprecated IDs: $green[%b]" printable.IsDeprecatedType
     printfn "└─┬ Packages:"
     printable.Names
     |> Seq.iteri (fun i l ->
@@ -39,6 +47,15 @@ let private prettyPrinter printable =
                else "├"
            printfn "  %s── %s" prefix l)
     printfn ""
+
+let getSpdxInfo licenseId =
+    async {
+        let! spdx = getSpdx false
+        match spdx.Licenses |> Array.tryFind (fun l -> l.LicenseId = licenseId) with
+        | Some spdxInfo -> return (spdxInfo.IsOsiApproved, spdxInfo.IsFsfLibre, spdxInfo.IsDeprecatedLicenseId)
+        | None -> return (false, false, false)
+    }
+    |> Async.RunSynchronously
 
 let prettyPrint (projectSpec : PackageSpec) licenses =
     let unlicensed =
@@ -71,23 +88,35 @@ let prettyPrint (projectSpec : PackageSpec) licenses =
         colorprintfn "$red[Packages without licenses]"
         { Expression = "Missing"
           Count = Seq.length unlicensed
-          Names = unlicensed |> Seq.map (fun l -> l.PackageName) }
+          Names = unlicensed |> Seq.map (fun l -> l.PackageName)
+          IsOsi = false
+          IsFsf = false
+          IsDeprecatedType = false }
         |> prettyPrinter
     if Seq.length legacyLicensed > 0 then
         colorprintfn "$yellow[Packages using the legacy NuGet license structure]"
         { Expression = "Unable to determine"
           Count = Seq.length legacyLicensed
-          Names = legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url) }
+          Names = legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url)
+          IsOsi = false
+          IsFsf = false
+          IsDeprecatedType = false }
         |> prettyPrinter
     if Seq.length licensed > 0 then
         licensed
         |> Seq.map (fun (license, packages) ->
-               { Expression =
-                     match license with
-                     | Some l -> l
-                     | None -> "No License"
+               let exp =
+                   match license with
+                   | Some l -> l
+                   | None -> "No License"
+
+               let (osi, fsf, dep) = getSpdxInfo exp
+               { Expression = exp
                  Count = Seq.length packages
-                 Names = packages |> Seq.map (fun p -> p.PackageName) })
+                 Names = packages |> Seq.map (fun p -> p.PackageName)
+                 IsOsi = osi
+                 IsFsf = fsf
+                 IsDeprecatedType = dep })
         |> Seq.iter prettyPrinter
     ignore()
 
@@ -126,24 +155,36 @@ let jsonBuilder (projectSpec : PackageSpec) licenses =
         Seq.append (if Seq.length unlicensed > 0 then
                         [| { Expression = "Missing"
                              Count = Seq.length unlicensed
-                             Names = unlicensed |> Seq.map (fun l -> l.PackageName) } |]
+                             Names = unlicensed |> Seq.map (fun l -> l.PackageName)
+                             IsOsi = false
+                             IsFsf = false
+                             IsDeprecatedType = false } |]
                     else [||]) (if Seq.length legacyLicensed > 0 then
                                     [| { Expression = "Unable to determine"
                                          Count = Seq.length legacyLicensed
                                          Names =
-                                             legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url) } |]
+                                             legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url)
+                                         IsOsi = false
+                                         IsFsf = false
+                                         IsDeprecatedType = false } |]
                                 else [||])
 
     { ProjectName = projectSpec.Name
       Licenses =
           licensed
           |> Seq.map (fun (license, packages) ->
-                 { Expression =
-                       match license with
-                       | Some l -> l
-                       | None -> "No License"
+                 let exp =
+                     match license with
+                     | Some l -> l
+                     | None -> "No License"
+
+                 let (osi, fsf, dep) = getSpdxInfo exp
+                 { Expression = exp
                    Count = Seq.length packages
-                   Names = packages |> Seq.map (fun p -> p.PackageName) })
+                   Names = packages |> Seq.map (fun p -> p.PackageName)
+                   IsOsi = osi
+                   IsFsf = fsf
+                   IsDeprecatedType = dep })
           |> Seq.append pl }
 
 [<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
@@ -152,9 +193,7 @@ type ProjectOutput =
 
 let jsonPrinter path json =
     let j = JsonConvert.SerializeObject({ Projects = json }, Formatting.Indented)
-
     match path with
     | ""
-    | null ->  printfn "%s" j
-    | _ ->
-        File.WriteAllText(path, j)
+    | null -> printfn "%s" j
+    | _ -> File.WriteAllText(path, j)

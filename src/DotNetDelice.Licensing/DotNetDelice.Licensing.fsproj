@@ -16,6 +16,7 @@
     <Compile Include="DotNetCli.fs" />
     <Compile Include="DependencyGraph.fs" />
     <Compile Include="CommonLicenseDescriptions.fs" />
+    <Compile Include="Spdx.fs" />
     <Compile Include="LicenseCache.fs" />
     <Compile Include="LicenseBuilder.fs" />
   </ItemGroup>
