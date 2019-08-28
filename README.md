@@ -72,7 +72,27 @@ At the end of 2018 the [`licenseUrl` field in the nuspec file was deprecated](ht
 
 This new metadata makes it possible to determine from the package what the license in use by a package is, rather than relying on navigating through to the referred license file.
 
-Some NuGet packages have moved over to the new format, but many of them are still using the legacy approach which makes it difficult for delice to determine what the license is of a package. Presently, these packages will be reported with an "Unable to determine" license type with the URL of the license URL included in the output.
+Some NuGet packages have moved over to the new format, but many of them are still using the legacy approach which makes it difficult for delice to determine what the license is of a package.
+
+By default these packages will be reported with an "Unable to determine" license type with the URL of the license URL included in the output but there are two options that can be set at the CLI to help attempt to discover what the license is.
+
+## Using GitHub's API to Check Licenses
+
+Projects hosted on GitHub will often have their license shown on the repository header, which is done by GitHub scanning the license file in the repository and determine the appropriate type. This can be accessed via [GitHub's API](https://developer.github.com/v3/licenses/#get-the-contents-of-a-repositorys-license) and `delice` provides an integration to it.
+
+When the `--check-github` flag is set `delice` will check if the projects license URL points to a GitHub-hosted file, if it does, it'll attempt to get the owner and repo name from the URL to then call the GitHub API. If the API returns a detected license the license information will be updated in the response from `delice`.
+
+It's recommended to also use the `--github-token <token>` CLI option to provide a GitHub Personal Access Token to authenticate the requests (they are anonymous by default) as this will avoid rate-limiting happening with the API.
+
+## Checking License Contents
+
+GitHub uses [Licensee](https://licensee.github.io/licensee/) in its [detecting a license](https://help.github.com/en/articles/licensing-a-repository#detecting-a-license). Licensee will look at the contents of the license and compare it to license templates using [Sørensen–Dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient).
+
+`delice` also supports doing this via the `--check-license-contents` flag. When provided `delice` will download the contents of the `licenseUrl` in the nuspec and compare it to known templates stored within itself. The comparison requires that the license and template be _at least_ 90% the same for it to be considered a match (this is lower than Licensee, which uses 98%, but experiments against .NET showed it was better to be a bit looser), so there is still some potential misses.
+
+Also, only certain license templates are stored within `delice`, but feel free to add more via PR's.
+
+This can work in conjunction with the GitHub API test, but will be run _after_ the API check is done, and only if it fails.
 
 ## Common License Cache
 
