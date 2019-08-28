@@ -231,6 +231,9 @@ let private convertIfGitHub (licenseUrl : string) =
         Regex.Replace(licenseUrl, "^https?:\/\/github\.com", "https://raw.githubusercontent.com").Replace("/blob/", "/")
     else licenseUrl
 
+let findMatchingLicense licenseContents =
+    descriptions |> Map.tryFindKey (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.98)
+
 let checkLicenseContents checkLicenseContent packageName licenseUrl =
     if not checkLicenseContent then None
     else
@@ -241,9 +244,7 @@ let checkLicenseContents checkLicenseContent packageName licenseUrl =
             else
                 try
                     let licenseContents = convertIfGitHub licenseUrl |> Http.RequestString
-                    match descriptions
-                          |> Map.tryFindKey
-                                 (fun _ licenseTemplate -> diceCoefficient licenseTemplate licenseContents > 0.98) with
+                    match findMatchingLicense licenseContents with
                     | Some key ->
                         let lc =
                             { Expression = key

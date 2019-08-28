@@ -6,6 +6,8 @@ open NuGet.Protocol
 open NuGet.Packaging.Core
 open NuGet.ProjectModel
 open LicenseCache
+open NuGet.Packaging
+open System.IO
 
 type LicenseMetadata =
     { Type : string option
@@ -28,7 +30,7 @@ let rec private findPackage paths identity logger =
     | head :: rest ->
         match LocalFolderUtility.GetPackageV3(head, identity, logger) with
         | null -> findPackage rest identity logger
-        | pkg -> Some pkg
+        | pkg -> Some (pkg, head)
     | [] -> None
 
 let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicenseContent (lib : LockFileLibrary) =
@@ -43,7 +45,7 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicense
         { PackageName = lib.Name
           PackageVersion = lib.Version }
         |> PackageNotFound
-    | Some pId ->
+    | Some (pId, path) ->
         let licenseMetadata =
             { Type = None
               Version = None
@@ -78,7 +80,19 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicense
                                            Version = None }
                     |> Licensed
                 | None -> licenseMetadata |> LegacyLicensed
-        | licence ->
-            { licenseMetadata with Type = Some licence.License
-                                   Version = Some licence.Version }
+        | license when license.Type = LicenseType.File ->
+            match Path.Combine(path, lib.Path, license.License)
+                  |> File.ReadAllText
+                  |> findMatchingLicense with
+            | Some licenseSpdx ->
+                { licenseMetadata with Type = Some licenseSpdx
+                                       Version = Some license.Version }
+                |> Licensed
+            | None ->
+                { licenseMetadata with Type = Some license.License
+                                       Version = Some license.Version }
+                |> Licensed
+        | license ->
+            { licenseMetadata with Type = Some license.License
+                                   Version = Some license.Version }
             |> Licensed
