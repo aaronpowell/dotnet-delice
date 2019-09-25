@@ -18,7 +18,8 @@ type LicenseMetadata =
 
 type MissingLicense =
     { PackageName : string
-      PackageVersion : NuGetVersion }
+      PackageVersion : NuGetVersion
+      Type : string }
 
 type LicenseResult =
     | Licensed of LicenseMetadata
@@ -49,7 +50,8 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicense
     match findPackage nugetPaths identity MemoryLogger.Instance with
     | None ->
         { PackageName = lib.Name
-          PackageVersion = lib.Version }
+          PackageVersion = lib.Version
+          Type = lib.Type }
         |> PackageNotFound
     | Some(pId, path) ->
         let licenseMetadata =
