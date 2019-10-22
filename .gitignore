@@ -6,3 +6,4 @@ obj/
 paket-files/
 .paket/
 licenses.json
+*.orig
