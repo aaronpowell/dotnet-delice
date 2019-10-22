@@ -1,5 +1,16 @@
 # Changelog for `dotnet-delice`
 
+## [1.2.0] - 2019-10-23
+
+### Added
+
+- Detection of Project References as a unique license mode
+
+### Changed
+
+- Project References are now extracted out to a separate node in the response since their license is unknown
+- Updated to .NET Core 3.0
+
 ## [1.1.0] - 2019-08-28
 
 ### Added
