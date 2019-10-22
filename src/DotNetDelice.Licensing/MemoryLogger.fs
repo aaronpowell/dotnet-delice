@@ -14,59 +14,59 @@ type MemoryLogger() =
     let warning = StringBuilder()
     interface ILogger with
 
-        member this.Log(level : LogLevel, data : string) : unit =
+        member this.Log(level: LogLevel, data: string): unit =
             data
             |> log.AppendLine
             |> ignore
 
-        member this.Log(message : ILogMessage) : unit =
+        member this.Log(message: ILogMessage): unit =
             message.ToString()
             |> log.AppendLine
             |> ignore
 
-        member this.LogAsync(level : LogLevel, data : string) : Threading.Tasks.Task =
+        member this.LogAsync(level: LogLevel, data: string): Threading.Tasks.Task =
             data
             |> log.AppendLine
             |> ignore
             Threading.Tasks.Task.Delay(0)
 
-        member this.LogAsync(message : ILogMessage) : Threading.Tasks.Task =
+        member this.LogAsync(message: ILogMessage): Threading.Tasks.Task =
             message.ToString()
             |> log.AppendLine
             |> ignore
             Threading.Tasks.Task.Delay(0)
 
-        member this.LogDebug(data : string) : unit =
+        member this.LogDebug(data: string): unit =
             data
             |> debug.AppendLine
             |> ignore
 
-        member this.LogError(data : string) : unit =
+        member this.LogError(data: string): unit =
             data
             |> error.AppendLine
             |> ignore
 
-        member this.LogInformation(data : string) : unit =
+        member this.LogInformation(data: string): unit =
             data
             |> info.AppendLine
             |> ignore
 
-        member this.LogInformationSummary(data : string) : unit =
+        member this.LogInformationSummary(data: string): unit =
             data
             |> info.AppendLine
             |> ignore
 
-        member this.LogMinimal(data : string) : unit =
+        member this.LogMinimal(data: string): unit =
             data
             |> minimal.AppendLine
             |> ignore
 
-        member this.LogVerbose(data : string) : unit =
+        member this.LogVerbose(data: string): unit =
             data
             |> verbose.AppendLine
             |> ignore
 
-        member this.LogWarning(data : string) : unit =
+        member this.LogWarning(data: string): unit =
             data
             |> warning.AppendLine
             |> ignore

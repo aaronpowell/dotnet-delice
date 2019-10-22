@@ -30,13 +30,11 @@ let getSpdx refreshFile =
             let! contents = download()
             File.WriteAllText(getFileLocation(), contents.ToString())
             return contents
+        else if not (File.Exists(getFileLocation())) then
+            let! contents = download()
+            File.WriteAllText(getFileLocation(), contents.ToString())
+            return contents
         else
-            if not (File.Exists(getFileLocation())) then
-                let! contents = download()
-                File.WriteAllText(getFileLocation(), contents.ToString())
-                return contents
-            else
-                let contents = File.ReadAllText <| getFileLocation()
-                return Spdx.Parse contents
+            let contents = File.ReadAllText <| getFileLocation()
+            return Spdx.Parse contents
     }
-

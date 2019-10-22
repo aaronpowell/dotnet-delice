@@ -5,7 +5,7 @@ open System.Diagnostics
 open System.IO
 open System.Text
 
-let rec private consumeStream (reader : StreamReader) (output : StringBuilder) =
+let rec private consumeStream (reader: StreamReader) (output: StringBuilder) =
     async {
         let! line = reader.ReadLineAsync() |> Async.AwaitTask
         match line with
@@ -14,9 +14,9 @@ let rec private consumeStream (reader : StreamReader) (output : StringBuilder) =
     }
 
 type RunResult =
-    { Output : string
-      Errors : string
-      ExitCode : int }
+    { Output: string
+      Errors: string
+      ExitCode: int }
     member this.IsSuccess = this.ExitCode = 0
 
 let dotnetRun args =
