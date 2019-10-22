@@ -58,18 +58,18 @@ let prettyPrint (projectSpec: PackageSpec) licenses =
     let unlicensed =
         licenses
         |> Seq.choose (fun l ->
-               match l with
-               | PackageNotFound l -> Some l
-               | _ -> None)
+            match l with
+            | PackageNotFound l -> Some l
+            | _ -> None)
         |> Seq.filter (fun l -> l.Type = "package")
         |> Seq.sortBy (fun l -> l.PackageName)
 
     let projectReferences =
         licenses
         |> Seq.choose (fun l ->
-               match l with
-               | PackageNotFound l -> Some l
-               | _ -> None)
+            match l with
+            | PackageNotFound l -> Some l
+            | _ -> None)
         |> Seq.filter (fun l -> l.Type = "project")
         |> Seq.sortBy (fun l -> l.PackageName)
 
@@ -145,18 +145,18 @@ let jsonBuilder (projectSpec: PackageSpec) licenses =
     let unlicensed =
         licenses
         |> Seq.choose (fun l ->
-               match l with
-               | PackageNotFound l -> Some l
-               | _ -> None)
+            match l with
+            | PackageNotFound l -> Some l
+            | _ -> None)
         |> Seq.filter (fun l -> l.Type = "package")
         |> Seq.sortBy (fun l -> l.PackageName)
 
     let projectReferences =
         licenses
         |> Seq.choose (fun l ->
-               match l with
-               | PackageNotFound l -> Some l
-               | _ -> None)
+            match l with
+            | PackageNotFound l -> Some l
+            | _ -> None)
         |> Seq.filter (fun l -> l.Type = "project")
         |> Seq.sortBy (fun l -> l.PackageName)
 
@@ -178,30 +178,35 @@ let jsonBuilder (projectSpec: PackageSpec) licenses =
         |> Seq.sortBy (fun l -> l.PackageName)
 
     let pl =
-        Seq.append (if Seq.length unlicensed > 0 then
-                        [| { Expression = "Missing"
-                             Count = Seq.length unlicensed
-                             Names = unlicensed |> Seq.map (fun l -> l.PackageName)
-                             IsOsi = false
-                             IsFsf = false
-                             IsDeprecatedType = false } |]
-                    else [||]) (if Seq.length legacyLicensed > 0 then
-                                    [| { Expression = "Unable to determine"
-                                         Count = Seq.length legacyLicensed
-                                         Names =
-                                             legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url)
-                                         IsOsi = false
-                                         IsFsf = false
-                                         IsDeprecatedType = false } |]
-                                else [||])
-        |> Seq.append (if Seq.length projectReferences > 0 then
-                           [| { Expression = "Project References"
-                                Count = Seq.length projectReferences
-                                Names = projectReferences |> Seq.map (fun l -> l.PackageName)
-                                IsOsi = false
-                                IsFsf = false
-                                IsDeprecatedType = false } |]
-                       else [||])
+        Seq.append
+            (if Seq.length unlicensed > 0 then
+                [| { Expression = "Missing"
+                     Count = Seq.length unlicensed
+                     Names = unlicensed |> Seq.map (fun l -> l.PackageName)
+                     IsOsi = false
+                     IsFsf = false
+                     IsDeprecatedType = false } |]
+             else
+                 [||])
+            (if Seq.length legacyLicensed > 0 then
+                [| { Expression = "Unable to determine"
+                     Count = Seq.length legacyLicensed
+                     Names = legacyLicensed |> Seq.map (fun l -> sprintf "%s (%s)" l.PackageName l.Url)
+                     IsOsi = false
+                     IsFsf = false
+                     IsDeprecatedType = false } |]
+             else
+                 [||])
+        |> Seq.append
+            (if Seq.length projectReferences > 0 then
+                [| { Expression = "Project References"
+                     Count = Seq.length projectReferences
+                     Names = projectReferences |> Seq.map (fun l -> l.PackageName)
+                     IsOsi = false
+                     IsFsf = false
+                     IsDeprecatedType = false } |]
+             else
+                 [||])
 
     { ProjectName = projectSpec.Name
       Licenses =

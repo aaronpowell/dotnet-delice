@@ -17,9 +17,9 @@ type LicenseMetadata =
       PackageVersion: NuGetVersion }
 
 type MissingLicense =
-    { PackageName : string
-      PackageVersion : NuGetVersion
-      Type : string }
+    { PackageName: string
+      PackageVersion: NuGetVersion
+      Type: string }
 
 type LicenseResult =
     | Licensed of LicenseMetadata
