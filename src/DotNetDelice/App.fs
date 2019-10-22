@@ -36,15 +36,17 @@ let findProject path =
             | _ -> failwith "More than one project files found in the path"
         | _ -> failwith "More than one solution file found in the path"
 
-let getLicenses checkGitHub token checkLicenseContent (projectSpec : PackageSpec) =
+let getLicenses checkGitHub token checkLicenseContent (projectSpec: PackageSpec) =
     let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
     let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
     lockFile.Libraries |> Seq.map (getPackageLicense projectSpec checkGitHub token checkLicenseContent)
 
 [<HelpOption>]
 type Cli() =
+
     [<Argument(0,
-               Description = "The path to a .sln, .csproj or .fsproj file, or to a directory containing a .NET Core solution/project. If none is specified, the current directory will be used.")>]
+               Description =
+                   "The path to a .sln, .csproj or .fsproj file, or to a directory containing a .NET Core solution/project. If none is specified, the current directory will be used.")>]
     member val Path = "" with get, set
 
     [<OptionAttribute(Description = "Output result as JSON")>]
@@ -53,13 +55,19 @@ type Cli() =
     [<OptionAttribute("--json-output", Description = "Path to JSON file rather than stdout")>]
     member val JsonOutput = "" with get, set
 
-    [<OptionAttribute("--check-github", Description = "If provided delice will attempt to look up the license via the GitHub API (provided it's GitHub hosted)")>]
+    [<OptionAttribute("--check-github",
+                      Description =
+                          "If provided delice will attempt to look up the license via the GitHub API (provided it's GitHub hosted)")>]
     member val CheckGitHub = false with get, set
 
-    [<OptionAttribute("--github-token", Description = "A GitHub Personal Access Token to perform authenticated requests against the API (used with --check-github). This ensures the tool isn't rate-limited when running")>]
+    [<OptionAttribute("--github-token",
+                      Description =
+                          "A GitHub Personal Access Token to perform authenticated requests against the API (used with --check-github). This ensures the tool isn't rate-limited when running")>]
     member val GitHubToken = "" with get, set
 
-    [<OptionAttribute("--check-license-content", Description = "When set delice will attempt to look at the license text and match it against some known license templates")>]
+    [<OptionAttribute("--check-license-content",
+                      Description =
+                          "When set delice will attempt to look at the license text and match it against some known license templates")>]
     member val CheckLicenseContent = false with get, set
 
     [<OptionAttribute("--refresh-spdx", Description = "Refreshes the SPDX license.json file used by the tool")>]
@@ -67,7 +75,9 @@ type Cli() =
 
     member this.OnExecute() =
         if this.RefreshSpdx then
-            getSpdx true |> Async.RunSynchronously |> ignore
+            getSpdx true
+            |> Async.RunSynchronously
+            |> ignore
 
         let path =
             match this.Path with
@@ -86,13 +96,10 @@ type Cli() =
             let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken this.CheckLicenseContent
             if this.Json then
                 dependencyGraph.Projects
-                |> Seq.map (fun projectSpec ->
-                       getLicenses' projectSpec
-                       |> jsonBuilder projectSpec)
+                |> Seq.map (fun projectSpec -> getLicenses' projectSpec |> jsonBuilder projectSpec)
                 |> jsonPrinter this.JsonOutput
             else
                 dependencyGraph.Projects
                 |> Seq.iter (fun projectSpec ->
-                       getLicenses' projectSpec
-                       |> prettyPrint projectSpec
-                       printfn "")
+                    getLicenses' projectSpec |> prettyPrint projectSpec
+                    printfn "")

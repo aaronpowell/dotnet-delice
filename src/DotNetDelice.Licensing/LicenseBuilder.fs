@@ -10,11 +10,11 @@ open NuGet.Packaging
 open System.IO
 
 type LicenseMetadata =
-    { Type : string option
-      Version : Version option
-      Url : string
-      PackageName : string
-      PackageVersion : NuGetVersion }
+    { Type: string option
+      Version: Version option
+      Url: string
+      PackageName: string
+      PackageVersion: NuGetVersion }
 
 type MissingLicense =
     { PackageName : string
@@ -35,7 +35,7 @@ let rec private findPackage paths identity logger =
     | [] -> None
 
 
-let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicenseContent (lib : LockFileLibrary) =
+let getPackageLicense (projectSpec: PackageSpec) checkGitHub token checkLicenseContent (lib: LockFileLibrary) =
     let identity = PackageIdentity(lib.Name, lib.Version)
 
     let checkLicenseContents' name url =
@@ -65,27 +65,31 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicense
             let url = pId.Nuspec.GetLicenseUrl()
             match checkGitHub, knownLicenseCache.TryFind url with
             | (_, Some cachedLicense) ->
-                { licenseMetadata with Type = Some cachedLicense.Expression
-                                       Version = None }
+                { licenseMetadata with
+                      Type = Some cachedLicense.Expression
+                      Version = None }
                 |> Licensed
             | (true, None) ->
                 match checkLicenseViaGitHub token url with
                 | Some cachedLicense ->
-                    { licenseMetadata with Type = Some cachedLicense.Expression
-                                           Version = None }
+                    { licenseMetadata with
+                          Type = Some cachedLicense.Expression
+                          Version = None }
                     |> Licensed
                 | None ->
                     match checkLicenseContents' lib.Name url with
                     | Some cachedLicense ->
-                        { licenseMetadata with Type = Some cachedLicense.Expression
-                                               Version = None }
+                        { licenseMetadata with
+                              Type = Some cachedLicense.Expression
+                              Version = None }
                         |> Licensed
                     | None -> licenseMetadata |> LegacyLicensed
             | (false, None) ->
                 match checkLicenseContents' lib.Name url with
                 | Some cachedLicense ->
-                    { licenseMetadata with Type = Some cachedLicense.Expression
-                                           Version = None }
+                    { licenseMetadata with
+                          Type = Some cachedLicense.Expression
+                          Version = None }
                     |> Licensed
                 | None -> licenseMetadata |> LegacyLicensed
         | license when license.Type = LicenseType.File ->
@@ -93,14 +97,17 @@ let getPackageLicense (projectSpec : PackageSpec) checkGitHub token checkLicense
                   |> File.ReadAllText
                   |> findMatchingLicense with
             | Some licenseSpdx ->
-                { licenseMetadata with Type = Some licenseSpdx
-                                       Version = Some license.Version }
+                { licenseMetadata with
+                      Type = Some licenseSpdx
+                      Version = Some license.Version }
                 |> Licensed
             | None ->
-                { licenseMetadata with Type = Some license.License
-                                       Version = Some license.Version }
+                { licenseMetadata with
+                      Type = Some license.License
+                      Version = Some license.Version }
                 |> Licensed
         | license ->
-            { licenseMetadata with Type = Some license.License
-                                   Version = Some license.Version }
+            { licenseMetadata with
+                  Type = Some license.License
+                  Version = Some license.Version }
             |> Licensed
