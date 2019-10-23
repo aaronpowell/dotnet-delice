@@ -17,6 +17,7 @@
     <PackageReleaseNotes>@releaseNotes@</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="OptionConverter.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />

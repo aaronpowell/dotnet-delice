@@ -8,12 +8,14 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Serialization
 open System.IO
 open Spdx
+open OptionConverter
 
 [<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
 type Package =
     { Name: string
       Version: string
-      Url: string Option }
+      Url: string Option
+      DisplayName: string }
 
 [<JsonObjectAttribute(NamingStrategyType = typeof<CamelCaseNamingStrategy>)>]
 type PrintableLicense =
@@ -49,8 +51,7 @@ let private prettyPrinter printable =
         let prefix =
             if i = (printable.Count - 1) then "└"
             else "├"
-        if (l.Url.IsNone) then printfn "  %s── %s" prefix l.Name
-        else printfn "  %s── %s (%s)" prefix l.Name l.Url.Value)
+        printfn "  %s── %s" prefix l.DisplayName)
     printfn ""
 
 let getSpdxInfo licenseId =
@@ -69,6 +70,16 @@ let prettyPrint (projectSpec: PackageSpec) licenses =
             match l with
             | PackageNotFound l -> Some l
             | _ -> None)
+        |> Seq.filter (fun l -> l.Type = "package")
+        |> Seq.sortBy (fun l -> l.PackageName)
+
+    let projectReferences =
+        licenses
+        |> Seq.choose (fun l ->
+            match l with
+            | PackageNotFound l -> Some l
+            | _ -> None)
+        |> Seq.filter (fun l -> l.Type = "project")
         |> Seq.sortBy (fun l -> l.PackageName)
 
     let licensed =
@@ -89,6 +100,21 @@ let prettyPrint (projectSpec: PackageSpec) licenses =
         |> Seq.sortBy (fun l -> l.PackageName)
 
     printfn "Project %s" projectSpec.Name
+    if Seq.length projectReferences > 0 then
+        colorprintfn "$green[Project References]"
+        { Expression = "Project References"
+          Count = Seq.length projectReferences
+          Packages =
+              projectReferences
+              |> Seq.map (fun l ->
+                  { Name = l.PackageName
+                    Version = l.PackageVersion.OriginalVersion
+                    Url = None
+                    DisplayName = sprintf "%s@%s" l.PackageName l.PackageVersion.OriginalVersion })
+          IsOsi = false
+          IsFsf = false
+          IsDeprecatedType = false }
+        |> prettyPrinter
     if Seq.length unlicensed > 0 then
         colorprintfn "$red[Packages without licenses]"
         { Expression = "Missing"
@@ -98,7 +124,8 @@ let prettyPrint (projectSpec: PackageSpec) licenses =
               |> Seq.map (fun l ->
                   { Name = l.PackageName
                     Version = l.PackageVersion.OriginalVersion
-                    Url = None })
+                    Url = None
+                    DisplayName = sprintf "%s@%s" l.PackageName l.PackageVersion.OriginalVersion })
           IsOsi = false
           IsFsf = false
           IsDeprecatedType = false }
@@ -112,7 +139,8 @@ let prettyPrint (projectSpec: PackageSpec) licenses =
               |> Seq.map (fun l ->
                   { Name = l.PackageName
                     Version = l.PackageVersion.OriginalVersion
-                    Url = None })
+                    Url = Some l.Url
+                    DisplayName = sprintf "%s@%s (%s)" l.PackageName l.PackageVersion.OriginalVersion l.Url })
           IsOsi = false
           IsFsf = false
           IsDeprecatedType = false }
@@ -133,7 +161,8 @@ let prettyPrint (projectSpec: PackageSpec) licenses =
                   |> Seq.map (fun p ->
                       { Name = p.PackageName
                         Version = p.PackageVersion.OriginalVersion
-                        Url = Some p.Url })
+                        Url = Some p.Url
+                        DisplayName = sprintf "%s@%s" p.PackageName p.PackageVersion.OriginalVersion })
               IsOsi = osi
               IsFsf = fsf
               IsDeprecatedType = dep })
@@ -152,6 +181,16 @@ let jsonBuilder (projectSpec: PackageSpec) licenses =
             match l with
             | PackageNotFound l -> Some l
             | _ -> None)
+        |> Seq.filter (fun l -> l.Type = "package")
+        |> Seq.sortBy (fun l -> l.PackageName)
+
+    let projectReferences =
+        licenses
+        |> Seq.choose (fun l ->
+            match l with
+            | PackageNotFound l -> Some l
+            | _ -> None)
+        |> Seq.filter (fun l -> l.Type = "project")
         |> Seq.sortBy (fun l -> l.PackageName)
 
     let licensed =
@@ -181,7 +220,8 @@ let jsonBuilder (projectSpec: PackageSpec) licenses =
                          |> Seq.map (fun l ->
                              { Name = l.PackageName
                                Version = l.PackageVersion.OriginalVersion
-                               Url = None })
+                               Url = None
+                               DisplayName = sprintf "%s@%s" l.PackageName l.PackageVersion.OriginalVersion })
                      IsOsi = false
                      IsFsf = false
                      IsDeprecatedType = false } |]
@@ -192,10 +232,28 @@ let jsonBuilder (projectSpec: PackageSpec) licenses =
                      Count = Seq.length legacyLicensed
                      Packages =
                          legacyLicensed
+                         |> Seq.map
+                             (fun l ->
+                             { Name = l.PackageName
+                               Version = l.PackageVersion.OriginalVersion
+                               Url = Some l.Url
+                               DisplayName = sprintf "%s@%s (%s)" l.PackageName l.PackageVersion.OriginalVersion l.Url })
+                     IsOsi = false
+                     IsFsf = false
+                     IsDeprecatedType = false } |]
+             else
+                 [||])
+        |> Seq.append
+            (if Seq.length projectReferences > 0 then
+                [| { Expression = "Project References"
+                     Count = Seq.length projectReferences
+                     Packages =
+                         projectReferences
                          |> Seq.map (fun l ->
                              { Name = l.PackageName
                                Version = l.PackageVersion.OriginalVersion
-                               Url = Some l.Url })
+                               Url = None
+                               DisplayName = sprintf "%s@%s" l.PackageName l.PackageVersion.OriginalVersion })
                      IsOsi = false
                      IsFsf = false
                      IsDeprecatedType = false } |]
@@ -216,10 +274,11 @@ let jsonBuilder (projectSpec: PackageSpec) licenses =
                 Count = Seq.length packages
                 Packages =
                     packages
-                    |> Seq.map (fun p ->
-                        { Name = p.PackageName
-                          Version = p.PackageVersion.OriginalVersion
-                          Url = None })
+                    |> Seq.map (fun l ->
+                        { Name = l.PackageName
+                          Version = l.PackageVersion.OriginalVersion
+                          Url = Some l.Url
+                          DisplayName = sprintf "%s@%s" l.PackageName l.PackageVersion.OriginalVersion })
                 IsOsi = osi
                 IsFsf = fsf
                 IsDeprecatedType = dep })
@@ -230,7 +289,9 @@ type ProjectOutput =
     { Projects: PackageOutput seq }
 
 let jsonPrinter path json =
-    let j = JsonConvert.SerializeObject({ Projects = json }, Formatting.Indented)
+    let settings = JsonSerializerSettings()
+    settings.Converters.Add(OptionConverter())
+    let j = JsonConvert.SerializeObject({ Projects = json }, Formatting.Indented, settings)
     match path with
     | ""
     | null -> printfn "%s" j
