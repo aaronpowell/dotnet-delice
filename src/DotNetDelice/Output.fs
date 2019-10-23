@@ -52,7 +52,9 @@ let private prettyPrinter printable =
            let prefix =
                if i = (printable.Count - 1) then "└"
                else "├"
-           printfn "  %s── %s (%s)" prefix l.Name l.Url)
+               if (url == null) then
+                   printfn "  %s── %s" prefix l.Name
+               else printfn "  %s── %s (%s)" prefix l.Name url)
     printfn ""
 
 let getSpdxInfo licenseId =
@@ -104,7 +106,7 @@ let prettyPrint (projectSpec : PackageSpec) licenses =
         colorprintfn "$yellow[Packages using the legacy NuGet license structure]"
         { Expression = "Unable to determine"
           Count = Seq.length legacyLicensed
-          Packages = legacyLicensed |> Seq.map (fun l -> { Name = l.PackageName; Version = l.PackageVersion.OriginalVersion; Url = l.Url })
+          Packages = legacyLicensed |> Seq.map (fun l -> { Name = l.PackageName; Version = l.PackageVersion.OriginalVersion; Url = null })
           IsOsi = false
           IsFsf = false
           IsDeprecatedType = false }
@@ -188,7 +190,7 @@ let jsonBuilder (projectSpec : PackageSpec) licenses =
                  let (osi, fsf, dep) = getSpdxInfo exp
                  { Expression = exp
                    Count = Seq.length packages
-                   Packages = packages |> Seq.map (fun p -> { Name = p.PackageName; Version = p.PackageVersion.OriginalVersion; Url = p.Url })
+                   Packages = packages |> Seq.map (fun p -> { Name = p.PackageName; Version = p.PackageVersion.OriginalVersion; Url = null })
                    IsOsi = osi
                    IsFsf = fsf
                    IsDeprecatedType = dep })
