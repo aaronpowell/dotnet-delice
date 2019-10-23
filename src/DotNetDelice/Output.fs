@@ -52,7 +52,7 @@ let private prettyPrinter printable =
            let prefix =
                if i = (printable.Count - 1) then "└"
                else "├"
-               if (url == null) then
+               if (l.url == null) then
                    printfn "  %s── %s" prefix l.Name
                else printfn "  %s── %s (%s)" prefix l.Name url)
     printfn ""
