@@ -4,7 +4,8 @@
 
 ### Added
 
-- Putting version number & URL for package in properties of the JSON output (issues #7 & #9)
+- Putting version number for package in properties of the JSON output (issues #7)
+- Putting URL for package license in properties of the JSON output (issues #9)
 
 ### Changed
 
