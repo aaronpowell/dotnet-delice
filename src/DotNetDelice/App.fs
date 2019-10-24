@@ -99,10 +99,10 @@ type Cli() =
             let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken this.CheckLicenseContent
             if this.Json then
                 dependencyGraph.Projects
-                |> Seq.map (fun projectSpec -> getLicenses' projectSpec |> jsonBuilder projectSpec)
+                |> Seq.map (fun projectSpec -> getLicenses' projectSpec |> jsonBuilder projectSpec.Name)
                 |> jsonPrinter this.JsonOutput
             else
                 dependencyGraph.Projects
                 |> Seq.iter (fun projectSpec ->
-                    getLicenses' projectSpec |> prettyPrint projectSpec
+                    getLicenses' projectSpec |> prettyPrint projectSpec.Name
                     printfn "")

@@ -19,6 +19,8 @@
   <ItemGroup>
     <Compile Include="OptionConverter.fs" />
     <Compile Include="Output.fs" />
+    <Compile Include="JsonOutput.fs" />
+    <Compile Include="ConsoleOutput.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
