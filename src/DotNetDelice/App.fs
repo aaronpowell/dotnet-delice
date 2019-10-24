@@ -91,7 +91,10 @@ type Cli() =
             |> Async.RunSynchronously
 
         match dg with
-        | None -> printfn "whoops"
+        | None ->
+            printfn "Failed to generate the dependency graph for '%s'." path
+            printfn "Ensure that the project has been restored and compiled before running delice."
+            printfn "delice only supports SDK project files (.NET Core, NETStandard, etc.), not legacy MSBuild ones (common for .NET Framework)."
         | Some dependencyGraph ->
             let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken this.CheckLicenseContent
             if this.Json then
