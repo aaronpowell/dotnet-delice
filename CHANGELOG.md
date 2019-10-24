@@ -1,5 +1,17 @@
 # Changelog for `dotnet-delice`
 
+## [1.3.0] - 2019-10-24
+
+### Added
+
+- Putting version number & URL for package in properties of the JSON output (issues #7 & #9)
+
+### Changed
+
+- JSON output now includes the version and URL for packages (where available)
+- Pretty print output includes version
+- Better error message when the dependency graph for a project fails to load
+
 ## [1.2.0] - 2019-10-23
 
 ### Added
