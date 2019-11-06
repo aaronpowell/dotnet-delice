@@ -4,7 +4,7 @@
 
 delice is a tool for determining the license information of the packages that are referenced in a project/solution. This is a port of the Node.js utility [`delice`](https://github.com/cutenode/delice), created by [Tierney Cyren](https://github.com/bnb).
 
-**Note**: `dotnet-delice` only supports SDK project files for C#, F# and VB.NET (although I'm not sure on VB.NET, never tried it!), not the legacy "MSBuild style" project files (which only support .NET full framework). If you are still using the legacay project file the tool will fail. I'd encourage you to try and upgrade (using a tool such as [CsprojToVs2017](https://github.com/hvanbakel/CsprojToVs2017)).
+**Note**: `dotnet-delice` only supports SDK project files for C#, F# and VB.NET (although I'm not sure on VB.NET, never tried it!), not the legacy "MSBuild style" project files (which only support .NET full framework). If you are still using the legacy project file the tool will fail. I'd encourage you to try and upgrade (using a tool such as [CsprojToVs2017](https://github.com/hvanbakel/CsprojToVs2017)).
 
 # Usage
 
