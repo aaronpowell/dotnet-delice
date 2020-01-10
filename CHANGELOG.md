@@ -1,5 +1,11 @@
 # Changelog for `dotnet-delice`
 
+## [1.4.0] - 2020-01-10
+
+### Changed
+
+- Detecting unknown project styles and excluding them to reduce likelyhood of crashes when running against full framework projects
+
 ## [1.3.0] - 2019-10-24
 
 ### Added
