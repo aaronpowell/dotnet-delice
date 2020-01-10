@@ -94,15 +94,29 @@ type Cli() =
         | None ->
             printfn "Failed to generate the dependency graph for '%s'." path
             printfn "Ensure that the project has been restored and compiled before running delice."
-            printfn "delice only supports SDK project files (.NET Core, NETStandard, etc.), not legacy MSBuild ones (common for .NET Framework)."
+            printfn
+                "delice only supports SDK project files (.NET Core, NETStandard, etc.), not legacy MSBuild ones (common for .NET Framework)."
         | Some dependencyGraph ->
             let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken this.CheckLicenseContent
             if this.Json then
                 dependencyGraph.Projects
+                |> Seq.filter (fun projectSpec -> projectSpec.RestoreMetadata.ProjectStyle <> ProjectStyle.Unknown)
                 |> Seq.map (fun projectSpec -> getLicenses' projectSpec |> jsonBuilder projectSpec.Name)
                 |> jsonPrinter this.JsonOutput
             else
                 dependencyGraph.Projects
+                |> Seq.filter (fun projectSpec -> projectSpec.RestoreMetadata.ProjectStyle <> ProjectStyle.Unknown)
                 |> Seq.iter (fun projectSpec ->
                     getLicenses' projectSpec |> prettyPrint projectSpec.Name
                     printfn "")
+
+                let unknownProjectStyles =
+                    dependencyGraph.Projects
+                    |> Seq.filter (fun projectSpec -> projectSpec.RestoreMetadata.ProjectStyle = ProjectStyle.Unknown)
+                if Seq.length unknownProjectStyles > 1 then
+                    printfn "The following projects were skipped as they are of an unsupported project style:"
+                    unknownProjectStyles
+                    |> Seq.iteri (fun i projectSpec ->
+                        let prefix =
+                            if i = Seq.length unknownProjectStyles - 1 then "└" else "├"
+                        printfn "%s── %s" prefix projectSpec.Name)
