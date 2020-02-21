@@ -1,5 +1,11 @@
 # Changelog for `dotnet-delice`
 
+## Unreleased
+
+### Changed
+
+- Detecting dotnet tool references and handling them (issue #15)
+
 ## [1.4.0] - 2020-01-10
 
 ### Changed
