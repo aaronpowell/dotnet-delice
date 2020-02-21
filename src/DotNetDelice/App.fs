@@ -39,7 +39,31 @@ let findProject path =
 let getLicenses checkGitHub token checkLicenseContent (projectSpec: PackageSpec) =
     let file = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json")
     let lockFile = LockFileUtilities.GetLockFile(file, NullLogger.Instance)
-    lockFile.Libraries |> Seq.map (getPackageLicense projectSpec checkGitHub token checkLicenseContent)
+    lockFile.Libraries
+    |> Seq.map
+        (fun lib ->
+            getPackageLicense projectSpec checkGitHub token checkLicenseContent lib.Name lib.Version lib.Type)
+
+let getLicensesForTool checkGitHub token checkLicenseContent (projectSpec: PackageSpec) =
+    let package =
+        projectSpec.TargetFrameworks
+        |> Seq.map (fun fx ->
+            let dep = fx.Dependencies |> Seq.head
+            let pkg =
+                NuGet.Protocol.LocalFolderUtility.GetPackageV3
+                    (projectSpec.RestoreMetadata.PackagesPath, dep.Name, dep.LibraryRange.VersionRange.MinVersion,
+                     MemoryLogger.Instance)
+            pkg)
+        |> Seq.head
+
+    let depGroups = package.Nuspec.GetDependencyGroups()
+
+    depGroups
+    |> Seq.collect (fun dg -> dg.Packages)
+    |> Seq.map
+        (fun p ->
+            getPackageLicense projectSpec checkGitHub token checkLicenseContent p.Id p.VersionRange.MinVersion
+                "package")
 
 [<HelpOption>]
 type Cli() =
@@ -98,16 +122,34 @@ type Cli() =
                 "delice only supports SDK project files (.NET Core, NETStandard, etc.), not legacy MSBuild ones (common for .NET Framework)."
         | Some dependencyGraph ->
             let getLicenses' = getLicenses this.CheckGitHub this.GitHubToken this.CheckLicenseContent
-            if this.Json then
+            let projects =
                 dependencyGraph.Projects
-                |> Seq.filter (fun projectSpec -> projectSpec.RestoreMetadata.ProjectStyle <> ProjectStyle.Unknown)
+                |> Seq.filter (fun projectSpec ->
+                    projectSpec.RestoreMetadata.ProjectStyle <> ProjectStyle.Unknown
+                    && projectSpec.RestoreMetadata.ProjectStyle <> ProjectStyle.DotnetCliTool)
+
+            if this.Json then
+                let toolLicenseResults =
+                    dependencyGraph.Projects
+                    |> Seq.filter (fun ps -> ps.RestoreMetadata.ProjectStyle = ProjectStyle.DotnetCliTool)
+                    |> Seq.map (fun projectSpec ->
+                        getLicensesForTool this.CheckGitHub this.GitHubToken this.CheckLicenseContent projectSpec
+                        |> jsonBuilder projectSpec.Name)
+                projects
                 |> Seq.map (fun projectSpec -> getLicenses' projectSpec |> jsonBuilder projectSpec.Name)
+                |> Seq.append toolLicenseResults
                 |> jsonPrinter this.JsonOutput
             else
-                dependencyGraph.Projects
-                |> Seq.filter (fun projectSpec -> projectSpec.RestoreMetadata.ProjectStyle <> ProjectStyle.Unknown)
+                projects
                 |> Seq.iter (fun projectSpec ->
                     getLicenses' projectSpec |> prettyPrint projectSpec.Name
+                    printfn "")
+
+                dependencyGraph.Projects
+                |> Seq.filter (fun ps -> ps.RestoreMetadata.ProjectStyle = ProjectStyle.DotnetCliTool)
+                |> Seq.iter (fun projectSpec ->
+                    getLicensesForTool this.CheckGitHub this.GitHubToken this.CheckLicenseContent projectSpec
+                    |> prettyPrint projectSpec.Name
                     printfn "")
 
                 let unknownProjectStyles =
