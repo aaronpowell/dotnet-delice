@@ -26,8 +26,7 @@ type PrintableLicense =
 let private licensesCodeGen legacyLicensed =
     legacyLicensed
     |> Seq.groupBy (fun l -> l.Url)
-    |> Seq.iter
-        (fun (url, pkgs) ->
+    |> Seq.iter (fun (url, pkgs) ->
         printfn "(\"%s\", { Expression = \"\"; Packages = Map.ofList[%s]})" url.Value
             (pkgs
              |> Seq.map (fun p -> sprintf "(\"%s\", [\"%A\"])" p.Name p.Version)
@@ -36,8 +35,14 @@ let private licensesCodeGen legacyLicensed =
 let getSpdxInfo licenseId =
     async {
         let! spdx = getSpdx false
-        match spdx.Licenses |> Array.tryFind (fun l -> l.LicenseId = licenseId) with
-        | Some spdxInfo -> return (spdxInfo.IsOsiApproved, spdxInfo.IsFsfLibre, spdxInfo.IsDeprecatedLicenseId)
+        match spdx.Licenses
+              |> Array.tryFind (fun l -> l.LicenseId = licenseId) with
+        | Some spdxInfo ->
+            return (spdxInfo.IsOsiApproved,
+                    (match spdxInfo.IsFsfLibre with
+                     | Some b -> b
+                     | None -> false),
+                    spdxInfo.IsDeprecatedLicenseId)
         | None -> return (false, false, false)
     }
     |> Async.RunSynchronously
