@@ -1,10 +1,11 @@
 # Changelog for `dotnet-delice`
 
-## Unreleased
+## [1.5.0] - 2020-05-04
 
 ### Changed
 
 - Detecting dotnet tool references and handling them (issue #15)
+- Making `isFsfLibre` optional since it's often missing in the JSON SPDX response (issue #14)
 
 ## [1.4.0] - 2020-01-10
 
