@@ -34,14 +34,22 @@ let rec private findPackage paths identity logger =
         | pkg -> Some(pkg, head)
     | [] -> None
 
-let private buildLicenseFromPackage checkGitHub token checkLicenseContents' (identity: PackageIdentity) packagePath
-    (pId: LocalPackageInfo) path =
+let private buildLicenseFromPackage
+    checkGitHub
+    token
+    checkLicenseContents'
+    (identity: PackageIdentity)
+    packagePath
+    (pId: LocalPackageInfo)
+    path
+    =
     let licenseMetadata =
         { Type = None
           Version = None
           Url = pId.Nuspec.GetLicenseUrl()
           PackageName = identity.Id
           PackageVersion = identity.Version }
+
     match pId.Nuspec.GetLicenseMetadata() with
     | null ->
         let url = pId.Nuspec.GetLicenseUrl()
@@ -75,7 +83,7 @@ let private buildLicenseFromPackage checkGitHub token checkLicenseContents' (ide
                 |> Licensed
             | None -> licenseMetadata |> LegacyLicensed
     | license when license.Type = LicenseType.File ->
-        match Path.Combine(path, packagePath, license.License)
+        match Path.Combine(path, packagePath, license.License.Replace('\\', Path.DirectorySeparatorChar))
               |> File.ReadAllText
               |> findMatchingLicense with
         | Some licenseSpdx ->
@@ -94,9 +102,17 @@ let private buildLicenseFromPackage checkGitHub token checkLicenseContents' (ide
               Version = Some license.Version }
         |> Licensed
 
-let getPackageLicense (projectSpec: PackageSpec) checkGitHub token checkLicenseContent packageName packageVersion
-    packageType =
-    let identity = PackageIdentity(packageName, packageVersion)
+let getPackageLicense
+    (projectSpec: PackageSpec)
+    checkGitHub
+    token
+    checkLicenseContent
+    packageName
+    packageVersion
+    packageType
+    =
+    let identity =
+        PackageIdentity(packageName, packageVersion)
 
     let checkLicenseContents' name url =
         if checkLicenseContent then checkLicenseContents name url else None
@@ -112,6 +128,6 @@ let getPackageLicense (projectSpec: PackageSpec) checkGitHub token checkLicenseC
           PackageVersion = identity.Version
           Type = packageType }
         |> PackageNotFound
-    | Some(pId, path) ->
+    | Some (pId, path) ->
         buildLicenseFromPackage checkGitHub token checkLicenseContents' identity
             ((sprintf "%s/%A" identity.Id identity.Version).ToLower()) pId path
