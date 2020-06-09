@@ -29,6 +29,9 @@ Target.create "Changelog" (fun _ ->
   printfn "##vso[task.setvariable variable=packageVersion]%s" changelog.LatestEntry.AssemblyVersion
 
   Templates.replaceInFiles ["@releaseNotes@", s] [ "./src/DotNetDelice/DotNetDelice.fsproj"; "./src/DotNetDelice.Licensing/DotNetDelice.Licensing.fsproj" ]
+
+  [|sprintf "%O" changelog.LatestEntry.NuGetVersion|]
+  |> File.append "./.nupkg/version.md"
 )
 
 Target.create "All" ignore

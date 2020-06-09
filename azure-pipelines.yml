@@ -67,7 +67,7 @@ stages:
                 artifact: $(packageArtifactName)
 
               - script: |
-                  pv=$(ls $(Pipeline.Workspace)/$(packageArtifactName)/*.nupkg | sed 's/.*\/dotnet-delice\.\([0-9\.]*\.[0-9\.]*\.[0-9\.]*\)\..*/\1/'g)
+                  pv=$(cat $(Pipeline.Workspace)/$(packageArtifactName)/version.md)
                   echo "##vso[task.setvariable variable=packageVersion]$pv"
                 displayName: Get package version
 
