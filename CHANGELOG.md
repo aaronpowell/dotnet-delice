@@ -1,5 +1,11 @@
 # Changelog for `dotnet-delice`
 
+## [1.5.2] - 2020-06-09
+
+### Fixed
+
+- Error handling the potential for a failed response when querying GitHub for license info (issue #21)
+
 ## [1.5.1] - 2020-06-09
 
 ### Fixed

@@ -206,18 +206,26 @@ let checkLicenseViaGitHub token licenseUrl =
                          | _ -> [ "Authorization", sprintf "token %s" token ])
 
                 let res =
-                    Http.RequestString(sprintf "https://api.github.com/repos/%s/%s/license" org repo, headers = headers)
-                    |> LicenseResponse.Parse
-                if res.License.SpdxId.JsonValue.AsString() = "NOASSERTION" then
+                    try
+                        Http.RequestString(sprintf "https://api.github.com/repos/%s/%s/license" org repo, headers = headers)
+                        |> LicenseResponse.Parse
+                        |> Some
+                    with _ ->
+                        None
+
+                match res with
+                | Some res when res.License.SpdxId.JsonValue.AsString() = "NOASSERTION" ->
                     // this is what the GitHub API returns if it can't determine the license of a repository
                     githubNoAssertion <- licenseUrl :: githubNoAssertion
                     None
-                else
+                | Some res ->
                     let lc =
                         { Expression = res.License.SpdxId.JsonValue.AsString()
                           Packages = Map.ofList [ (repo, []) ] }
                     dynamicLicenseCache <- dynamicLicenseCache.Add(licenseUrl, lc)
                     Some lc
+                | None ->
+                    None
             | _ -> None
 
 open CommonLicenseDescriptions
