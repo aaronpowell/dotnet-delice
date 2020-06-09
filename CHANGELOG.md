@@ -1,5 +1,15 @@
 # Changelog for `dotnet-delice`
 
+## [1.5.1] - 2020-06-09
+
+### Fixed
+
+- Normalising paths to license within a nuget package across OSes (issue #20)
+
+### Changed
+
+- Moving the common licenses to separate files rather than one big one
+
 ## [1.5.0] - 2020-05-04
 
 ### Changed
