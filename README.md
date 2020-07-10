@@ -98,7 +98,7 @@ This can work in conjunction with the GitHub API test, but will be run _after_ t
 
 ## Common License Cache
 
-The file [`LicenseCache.fs`](src/DotNetDelice/LicenseCache.fs) contains a map of commonly used packages and the license file that they have. This means that delice can determine more licenses out of the box.
+The file [`LicenseCache.fs`](src/DotNetDelice.Licensing/LicenseCache.fs) contains a map of commonly used packages and the license file that they have. This means that delice can determine more licenses out of the box.
 
 If you're coming across packages that you think should be in there, open a Pull Request with the updates.
 
