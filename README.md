@@ -8,7 +8,7 @@ delice is a tool for determining the license information of the packages that ar
 
 # Usage
 
-This tool ships as a [`dotnet` global tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools?WT.mc_id=dotnetdelice-github-aapowell) and can be installed like so:
+This tool ships as a [`dotnet` global tool](https://docs.microsoft.com/dotnet/core/tools/global-tools?WT.mc_id=javascript-0000-aapowell) and can be installed like so:
 
 ```
 dotnet tool install -g dotnet-delice
@@ -70,7 +70,7 @@ License Expression: MIT
 
 # Undetermined Licenses
 
-At the end of 2018 the [`licenseUrl` field in the nuspec file was deprecated](https://github.com/NuGet/Announcements/issues/32) to be replaced with a richer license metadata field. You can read more about it in the [annuncement](https://github.com/NuGet/Announcements/issues/32), the [documentation](https://docs.microsoft.com/en-us/nuget/reference/nuspec?WT.mc_id=dotnetdelice-github-aapowell#license) and [Spec wiki](https://github.com/NuGet/Home/wiki/Packaging-License-within-the-nupkg).
+At the end of 2018 the [`licenseUrl` field in the nuspec file was deprecated](https://github.com/NuGet/Announcements/issues/32) to be replaced with a richer license metadata field. You can read more about it in the [annuncement](https://github.com/NuGet/Announcements/issues/32), the [documentation](https://docs.microsoft.com/nuget/reference/nuspec?WT.mc_id=javascript-0000-aapowell#license) and [Spec wiki](https://github.com/NuGet/Home/wiki/Packaging-License-within-the-nupkg).
 
 This new metadata makes it possible to determine from the package what the license in use by a package is, rather than relying on navigating through to the referred license file.
 
