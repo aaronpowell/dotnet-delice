@@ -7,6 +7,7 @@
 - Updated to .NET 5
 - Upgraded packages
 - Added a devcontainer for easier development
+- Moved to GitHub Actions and created new build/release pipeline
 
 ## [1.5.2] - 2020-06-09
 
