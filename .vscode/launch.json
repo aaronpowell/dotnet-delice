@@ -9,7 +9,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/DotNetDelice/bin/Debug/netcoreapp3.0/dotnet-delice.dll",
+      "program": "${workspaceFolder}/src/DotNetDelice/bin/Debug/net5.0/dotnet-delice.dll",
       "args": [],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
