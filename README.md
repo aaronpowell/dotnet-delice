@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/aaronpowell/dotnet-delice/_apis/build/status/master%20build?branchName=master)](https://dev.azure.com/aaronpowell/dotnet-delice/_build/latest?definitionId=29&branchName=master) [![NuGet Badge](https://buildstats.info/nuget/dotnet-delice)](https://www.nuget.org/packages/dotnet-delice) [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?color=blue&style=flat-square)](http://opensource.org/licenses/MIT)
+[![Build Status](https://dev.azure.com/aaronpowell/dotnet-delice/_apis/build/status/master%20build?branchName=main)](https://dev.azure.com/aaronpowell/dotnet-delice/_build/latest?definitionId=29&branchName=main) [![NuGet Badge](https://buildstats.info/nuget/dotnet-delice)](https://www.nuget.org/packages/dotnet-delice) [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?color=blue&style=flat-square)](http://opensource.org/licenses/MIT)
 
 # dotnet-delice
 
