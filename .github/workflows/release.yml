@@ -36,6 +36,8 @@ jobs:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
 
+      - run: echo "tag=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -60,8 +62,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ${{ env.OUTPUT_PATH }}/dotnet-delice.${{ github.ref }}.nupkg
-          asset_name: dotnet-delice.${{ github.ref }}.nupkg
+          asset_path: ${{ env.OUTPUT_PATH }}/dotnet-delice.${{ env.tag }}.nupkg
+          asset_name: dotnet-delice.${{ env.tag }}.nupkg
           asset_content_type: application/zip
 
       - name: Upload NuGet package (Licensing)
@@ -70,8 +72,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ${{ env.OUTPUT_PATH }}/DotNetDelice.Licensing.${{ github.ref }}.nupkg
-          asset_name: DotNetDelice.Licensing.${{ github.ref }}.nupkg
+          asset_path: ${{ env.OUTPUT_PATH }}/DotNetDelice.Licensing.${{ env.tag }}.nupkg
+          asset_name: DotNetDelice.Licensing.${{ env.tag }}.nupkg
           asset_content_type: application/zip
 
       - name: Upload NuGet symbol package
@@ -80,8 +82,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ${{ env.OUTPUT_PATH }}/dotnet-delice.${{ github.ref }}.snupkg
-          asset_name: dotnet-delice.${{ github.ref }}.snupkg
+          asset_path: ${{ env.OUTPUT_PATH }}/dotnet-delice.${{ env.tag }}.snupkg
+          asset_name: dotnet-delice.${{ env.tag }}.snupkg
           asset_content_type: application/zip
 
       - name: Upload NuGet symbol package (Licensing)
@@ -90,8 +92,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ${{ env.OUTPUT_PATH }}/DotNetDelice.Licensing.${{ github.ref }}.snupkg
-          asset_name: DotNetDelice.Licensing.${{ github.ref }}.snupkg
+          asset_path: ${{ env.OUTPUT_PATH }}/DotNetDelice.Licensing.${{ env.tag }}.snupkg
+          asset_name: DotNetDelice.Licensing.${{ env.tag }}.snupkg
           asset_content_type: application/zip
 
 
