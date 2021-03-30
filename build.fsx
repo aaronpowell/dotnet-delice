@@ -1,43 +1,142 @@
 #load ".fake/build.fsx/intellisense.fsx"
+
 open Fake.Core
 open Fake.DotNet
 open Fake.IO
-open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
+open Fake.BuildServer
 
-Target.create "Clean" (fun _ ->
-    !! "src/**/bin"
-    ++ "src/**/obj"
-    |> Shell.cleanDirs
-)
+Target.initEnvironment ()
 
-Target.create "Build" (fun _ ->
-    !! "src/**/*.*proj"
-    |> Seq.iter (DotNet.build id)
-)
+let sln = "./DotNetDelice.sln"
 
-Target.create "Changelog" (fun _ ->
-  let changelog = "CHANGELOG.md" |> Changelog.load
-  Directory.ensure "./.nupkg"
+let getChangelog () =
+    let changelog = "CHANGELOG.md" |> Changelog.load
+    changelog.LatestEntry
 
-  [|sprintf "%O" changelog.LatestEntry|]
-  |> File.append "./.nupkg/changelog.md"
+let isRelease (targets: Target list) =
+    targets
+    |> Seq.map (fun t -> t.Name)
+    |> Seq.exists ((=) "Release")
 
-  let s = sprintf "%O" changelog.LatestEntry
+let configuration (targets: Target list) =
+    let defaultVal =
+        if isRelease targets then
+            "Release"
+        else
+            "Debug"
 
-  printfn "##vso[task.setvariable variable=packageVersion]%s" changelog.LatestEntry.AssemblyVersion
+    match Environment.environVarOrDefault "CONFIGURATION" defaultVal with
+    | "Debug" -> DotNet.BuildConfiguration.Debug
+    | "Release" -> DotNet.BuildConfiguration.Release
+    | config -> DotNet.BuildConfiguration.Custom config
 
-  Templates.replaceInFiles ["@releaseNotes@", s] [ "./src/DotNetDelice/DotNetDelice.fsproj"; "./src/DotNetDelice.Licensing/DotNetDelice.Licensing.fsproj" ]
+let getVersionNumber (changeLog: Changelog.ChangelogEntry) (targets: Target list) =
+    match GitHubActions.Environment.CI false, isRelease targets with
+    | (true, true) -> changeLog.NuGetVersion
+    | (true, false) -> sprintf "%s-ci-%s" changeLog.NuGetVersion GitHubActions.Environment.RunId
+    | (_, _) -> sprintf "%s-local" changeLog.NuGetVersion
 
-  [|sprintf "%O" changelog.LatestEntry.NuGetVersion|]
-  |> File.append "./.nupkg/version.md"
-)
+Target.create
+    "Clean"
+    (fun _ ->
+        DotNet.exec id "clean" "" |> ignore
+        !! "./.nuget" |> Shell.cleanDirs)
 
-Target.create "All" ignore
+Target.create "Restore" (fun _ -> DotNet.restore id sln)
 
-"Clean"
-  ==> "Build"
-  ==> "All"
+Target.create
+    "Build"
+    (fun ctx ->
+        let changelog = getChangelog ()
 
-Target.runOrDefault "All"
+        let args =
+            [ sprintf "/p:PackageVersion=%s" (getVersionNumber changelog (ctx.Context.AllExecutingTargets))
+              "--no-restore" ]
+
+        DotNet.build
+            (fun c ->
+                { c with
+                      Configuration = configuration (ctx.Context.AllExecutingTargets)
+                      Common = c.Common |> DotNet.Options.withAdditionalArgs args })
+            sln)
+
+Target.create
+    "Publish"
+    (fun ctx ->
+        let changelog = getChangelog ()
+
+        let args =
+            [ sprintf "/p:PackageVersion=%s" (getVersionNumber changelog (ctx.Context.AllExecutingTargets))
+              "--no-restore"
+              "--no-build" ]
+
+        DotNet.publish
+            (fun c ->
+                { c with
+                      Configuration = configuration (ctx.Context.AllExecutingTargets)
+                      Common = c.Common |> DotNet.Options.withAdditionalArgs args })
+            sln)
+
+Target.create
+    "Package"
+    (fun ctx ->
+        let changelog = getChangelog ()
+
+        let args =
+            [ sprintf "/p:PackageVersion=%s" (getVersionNumber changelog (ctx.Context.AllExecutingTargets))
+              sprintf "/p:PackageReleaseNotes=\"%s\"" (sprintf "%O" changelog) ]
+
+        DotNet.pack
+            (fun c ->
+                { c with
+                      Configuration = configuration (ctx.Context.AllExecutingTargets)
+                      OutputPath = Some "./.nupkg"
+                      Common = c.Common |> DotNet.Options.withAdditionalArgs args })
+            sln)
+
+Target.create
+    "PackageVersion"
+    (fun _ ->
+        let version = getChangelog ()
+        printfn "The version is %s" version.NuGetVersion)
+
+Target.create
+    "Changelog"
+    (fun _ ->
+        let changelog = getChangelog ()
+        Directory.ensure "./.nupkg"
+
+        [| sprintf "%O" changelog |]
+        |> File.append "./.nupkg/changelog.md")
+
+Target.create
+    "SetVersionForCI"
+    (fun _ ->
+        let changelog = getChangelog ()
+        printfn "::set-env name=package_version::%s" changelog.NuGetVersion)
+
+Target.create "Test" (fun _ -> printfn "Should write some tests...")
+
+Target.create "Default" ignore
+Target.create "Release" ignore
+Target.create "CI" ignore
+
+"Clean" ==> "Restore" ==> "Build" ==> "Default"
+
+"Default"
+==> "Publish"
+==> "Test"
+==> "Package"
+==> "Changelog"
+==> "Release"
+
+"Default"
+==> "Publish"
+==> "Test"
+==> "Package"
+==> "Changelog"
+==> "CI"
+
+Target.runOrDefault "Default"

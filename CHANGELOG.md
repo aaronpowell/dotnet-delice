@@ -1,5 +1,13 @@
 # Changelog for `dotnet-delice`
 
+## [1.6.0] - 2021-03-30
+
+### Changed
+
+- Updated to .NET 5
+- Upgraded packages
+- Added a devcontainer for easier development
+
 ## [1.5.2] - 2020-06-09
 
 ### Fixed

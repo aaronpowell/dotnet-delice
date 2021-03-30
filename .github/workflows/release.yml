@@ -1,0 +1,162 @@
+name: Release build
+
+env:
+  OUTPUT_PATH: ${{ github.workspace }}/.nupkg
+  DOTNET_VERSION: "5.0.201"
+  GITHUB_SOURCE: "https://nuget.pkg.github.com/aaronpowell/index.json"
+  NUGET_SOURCE: "https://api.nuget.org/v3/index.json"
+
+on:
+  push:
+    tags:
+      - v* #version is cut
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: CI
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Dotnet ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - name: Generate packages
+        run: dotnet fake run ./build.fsx --target Release
+
+      - name: Publish release packages
+        uses: actions/upload-artifact@v1
+        with:
+          name: packages
+          path: ${{ env.OUTPUT_PATH }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+          body_path: packages/changelog.md
+      - run: echo ${{ steps.create_release.outputs.id }} >> release.txt
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+            name: release_id
+            path: release.txt
+
+      - name: Upload NuGet package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: packages/DotNetDelice.${{ github.ref }}.nupkg
+          asset_name: DotNetDelice.${{ github.ref }}.nupkg
+          asset_content_type: application/zip
+
+      - name: Upload NuGet package (Licensing)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: packages/DotNetDelice.Licensing.${{ github.ref }}.nupkg
+          asset_name: DotNetDelice.Licensing.${{ github.ref }}.nupkg
+          asset_content_type: application/zip
+
+      - name: Upload NuGet symbol package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: packages/DotNetDelice.${{ github.ref }}.snupkg
+          asset_name: DotNetDelice.${{ github.ref }}.snupkg
+          asset_content_type: application/zip
+
+      - name: Upload NuGet symbol package (Licensing)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: packages/DotNetDelice.Licensing.${{ github.ref }}.snupkg
+          asset_name: DotNetDelice.Licensing.${{ github.ref }}.snupkg
+          asset_content_type: application/zip
+
+
+  publish-release:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: Release
+
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v2
+        with:
+            name: release_id
+      - run: echo "release_id=$(cat release.txt)" >> $GITHUB_ENV
+      - name: Publish release
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: process.env.release_id,
+              draft: false
+            })
+
+  publish-github:
+    needs: publish-release
+    runs-on: ubuntu-latest
+    environment:
+      name: GitHub Packages
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: packages
+          path: ${{ env.OUTPUT_PATH }}
+
+      - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish
+        run: dotnet nuget push --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_SOURCE }} "DotNetDelice*.nupkg"
+        working-directory: ${{ env.OUTPUT_PATH }}
+
+  publish-nuget:
+    needs: publish-release
+    runs-on: ubuntu-latest
+    environment:
+      name: NuGet
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: packages
+          path: ${{ env.OUTPUT_PATH }}
+
+      - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish
+        run: dotnet nuget push --api-key ${{ secrets.NUGET_KEY }} --source ${{ env.NUGET_SOURCE }} "DotNetDelice*.nupkg"
+        working-directory: ${{ env.OUTPUT_PATH }}
