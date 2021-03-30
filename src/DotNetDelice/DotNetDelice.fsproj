@@ -26,10 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BlackFox.ColoredPrintf" Version="1.0.3" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetDelice.Licensing\DotNetDelice.Licensing.fsproj" />
