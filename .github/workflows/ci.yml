@@ -56,5 +56,5 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish
-        run: dotnet nuget push --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_SOURCE }} "DotNetDelice*.nupkg"
+        run: dotnet nuget push --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_SOURCE }} "*.nupkg"
         working-directory: ${{ env.OUTPUT_PATH }}

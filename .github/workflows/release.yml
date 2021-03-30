@@ -60,8 +60,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: packages/DotNetDelice.${{ github.ref }}.nupkg
-          asset_name: DotNetDelice.${{ github.ref }}.nupkg
+          asset_path: packages/dotnet-delice.${{ github.ref }}.nupkg
+          asset_name: dotnet-delice.${{ github.ref }}.nupkg
           asset_content_type: application/zip
 
       - name: Upload NuGet package (Licensing)
@@ -80,8 +80,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: packages/DotNetDelice.${{ github.ref }}.snupkg
-          asset_name: DotNetDelice.${{ github.ref }}.snupkg
+          asset_path: packages/dotnet-delice.${{ github.ref }}.snupkg
+          asset_name: dotnet-delice.${{ github.ref }}.snupkg
           asset_content_type: application/zip
 
       - name: Upload NuGet symbol package (Licensing)
@@ -137,7 +137,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish
-        run: dotnet nuget push --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_SOURCE }} "DotNetDelice*.nupkg"
+        run: dotnet nuget push --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_SOURCE }} "*.nupkg"
         working-directory: ${{ env.OUTPUT_PATH }}
 
   publish-nuget:
@@ -158,5 +158,5 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish
-        run: dotnet nuget push --api-key ${{ secrets.NUGET_KEY }} --source ${{ env.NUGET_SOURCE }} "DotNetDelice*.nupkg"
+        run: dotnet nuget push --api-key ${{ secrets.NUGET_KEY }} --source ${{ env.NUGET_SOURCE }} "*.nupkg"
         working-directory: ${{ env.OUTPUT_PATH }}
