@@ -19,6 +19,9 @@
     <Compile Include="CommonLicenses/cpl.fs" />
     <Compile Include="CommonLicenses/gpl.fs" />
     <Compile Include="CommonLicenses/mit.fs" />
+    <Compile Include="CommonLicenses/bsd3.fs" />
+    <Compile Include="CommonLicenses/netfoundation.fs" />
+    <Compile Include="CommonLicenses/mslicense.fs" />
     <Compile Include="CommonLicenseDescriptions.fs" />
     <Compile Include="Spdx.fs" />
     <Compile Include="LicenseCache.fs" />
