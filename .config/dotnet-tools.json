@@ -13,6 +13,12 @@
       "commands": [
         "fake"
       ]
+    },
+    "fantomas-tool": {
+      "version": "4.6.0-alpha-004",
+      "commands": [
+        "fantomas"
+      ]
     }
   }
 }

@@ -1,18 +1,26 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.209.3/containers/dotnet
 {
   "name": "dotnet-delice",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "args": {
+      // Update 'VARIANT' to pick a .NET Core version: 3.1, 5.0, 6.0
+      // Append -bullseye or -focal to pin to an OS version.
+      "VARIANT": "6.0",
+      // Options
+      "NODE_VERSION": "none"
+    }
   },
 
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/bash"
-  },
+  // Set *default* container specific settings.json values on container create.
+  "settings": {},
 
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
     "Ionide.Ionide-fsharp",
     "paolodellepiane.fantomas-fmt",
-    "ms-vscode.csharp",
+    "ms-dotnettools.csharp",
     "EditorConfig.EditorConfig"
   ],
 
@@ -22,6 +30,5 @@
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "dotnet tool restore && dotnet restore",
 
-  // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode"
 }
