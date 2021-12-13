@@ -1,5 +1,12 @@
 # Changelog for `dotnet-delice`
 
+## [1.7.0] - Unreleased
+
+### Changed
+
+- Updated to .NET 6
+- Merged PR #30 to better support multi-license packages
+
 ## [1.6.0] - 2021-03-30
 
 ### Changed
