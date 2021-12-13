@@ -1,6 +1,6 @@
 # Changelog for `dotnet-delice`
 
-## [1.7.0] - Unreleased
+## [1.7.0] - 2021-12-14
 
 ### Changed
 
