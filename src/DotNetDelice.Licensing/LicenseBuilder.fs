@@ -38,22 +38,28 @@ let rec private findPackage paths identity logger =
     | [] -> None
 
 let private trimUrl (url: string) =
-    let licenseUrlRegexResult = Regex.Match(url, "^https?(?<trimmedUrl>:\/\/.*?)(?:\.(?:html?|txt))?$", RegexOptions.IgnoreCase)
-    if licenseUrlRegexResult.Success then licenseUrlRegexResult.Groups.["trimmedUrl"].Value
-    else url
+    let licenseUrlRegexResult =
+        Regex.Match(url, "^https?(?<trimmedUrl>:\/\/.*?)(?:\.(?:html?|txt))?$", RegexOptions.IgnoreCase)
+
+    if licenseUrlRegexResult.Success then
+        licenseUrlRegexResult.Groups.["trimmedUrl"].Value
+    else
+        url
 
 let private getSpdxLicenseByAlternateUrl licenseUrl =
     async {
         if isNull licenseUrl then
-            return null
+            return None
         else
             let! spdx = getSpdx false
             let trimmedUrl = trimUrl licenseUrl
+
             match spdx.Licenses
-                  |> Array.tryFind (fun l -> l.SeeAlso.Any(fun sa -> sa.Contains(trimmedUrl, StringComparison.OrdinalIgnoreCase))) with
-            | Some spdxInfo ->
-                return spdxInfo.LicenseId
-            | None -> return null
+                  |> Array.tryFind (fun l ->
+                      l.SeeAlso.Any(fun sa -> sa.Contains(trimmedUrl, StringComparison.OrdinalIgnoreCase)))
+                with
+            | Some spdxInfo -> return Some spdxInfo.LicenseId
+            | None -> return None
     }
     |> Async.RunSynchronously
 
@@ -79,59 +85,60 @@ let private buildLicenseFromPackage
         let projectUrl = pId.Nuspec.GetProjectUrl()
 
         match getSpdxLicenseByAlternateUrl url with
-        | null ->
+        | None ->
             match checkGitHub, knownLicenseCache.TryFind url with
             | (_, Some cachedLicense) ->
                 { licenseMetadata with
-                      Type = Some cachedLicense.Expression
-                      Version = None }
+                    Type = Some cachedLicense.Expression
+                    Version = None }
                 |> Licensed
             | (true, None) ->
                 match checkProjectAndLicenseViaGitHub token url projectUrl with
                 | Some cachedLicense ->
                     { licenseMetadata with
-                          Type = Some cachedLicense.Expression
-                          Version = None }
+                        Type = Some cachedLicense.Expression
+                        Version = None }
                     |> Licensed
                 | None ->
                     match checkLicenseContents' identity.Id url with
                     | Some cachedLicense ->
                         { licenseMetadata with
-                              Type = Some cachedLicense.Expression
-                              Version = None }
+                            Type = Some cachedLicense.Expression
+                            Version = None }
                         |> Licensed
                     | None -> licenseMetadata |> LegacyLicensed
             | (false, None) ->
                 match checkLicenseContents' identity.Id url with
                 | Some cachedLicense ->
                     { licenseMetadata with
-                          Type = Some cachedLicense.Expression
-                          Version = None }
+                        Type = Some cachedLicense.Expression
+                        Version = None }
                     |> Licensed
                 | None -> licenseMetadata |> LegacyLicensed
-        | license ->
+        | Some license ->
             { licenseMetadata with
-                  Type = Some license
-                  Version = None }
+                Type = Some license
+                Version = None }
             |> Licensed
     | license when license.Type = LicenseType.File ->
         match Path.Combine(path, packagePath, license.License.Replace('\\', Path.DirectorySeparatorChar))
               |> File.ReadAllText
-              |> findMatchingLicense with
+              |> findMatchingLicense
+            with
         | Some licenseSpdx ->
             { licenseMetadata with
-                  Type = Some licenseSpdx
-                  Version = Some license.Version }
+                Type = Some licenseSpdx
+                Version = Some license.Version }
             |> Licensed
         | None ->
             { licenseMetadata with
-                  Type = Some license.License
-                  Version = Some license.Version }
+                Type = Some license.License
+                Version = Some license.Version }
             |> Licensed
     | license ->
         { licenseMetadata with
-              Type = Some license.License
-              Version = Some license.Version }
+            Type = Some license.License
+            Version = Some license.Version }
         |> Licensed
 
 let getPackageLicense
@@ -147,7 +154,10 @@ let getPackageLicense
         PackageIdentity(packageName, packageVersion)
 
     let checkLicenseContents' name url =
-        if checkLicenseContent then checkLicenseContents name url else None
+        if checkLicenseContent then
+            checkLicenseContents name url
+        else
+            None
 
     let nugetPaths =
         [| projectSpec.RestoreMetadata.PackagesPath |]
@@ -161,5 +171,12 @@ let getPackageLicense
           Type = packageType }
         |> PackageNotFound
     | Some (pId, path) ->
-        buildLicenseFromPackage checkGitHub token checkLicenseContents' identity
-            ((sprintf "%s/%A" identity.Id identity.Version).ToLower()) pId path
+        buildLicenseFromPackage
+            checkGitHub
+            token
+            checkLicenseContents'
+            identity
+            ((sprintf "%s/%A" identity.Id identity.Version)
+                .ToLower())
+            pId
+            path
