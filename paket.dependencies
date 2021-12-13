@@ -1,3 +1,5 @@
+version 6.2.1
+
 // [ FAKE GROUP ]
 group Build
     storage none
