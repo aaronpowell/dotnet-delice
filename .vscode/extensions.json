@@ -2,7 +2,7 @@
   "recommendations": [
     "Ionide.Ionide-fsharp",
     "paolodellepiane.fantomas-fmt",
-    "ms-vscode.csharp",
+    "ms-dotnettools.csharp",
     "EditorConfig.EditorConfig"
   ]
 }
