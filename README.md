@@ -90,7 +90,7 @@ It's recommended to also use the `--github-token <token>` CLI option to provide 
 
 GitHub uses [Licensee](https://licensee.github.io/licensee/) in its [detecting a license](https://help.github.com/en/articles/licensing-a-repository#detecting-a-license). Licensee will look at the contents of the license and compare it to license templates using [Sørensen–Dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient).
 
-`delice` also supports doing this via the `--check-license-contents` flag. When provided `delice` will download the contents of the `licenseUrl` in the nuspec and compare it to known templates stored within itself. The comparison requires that the license and template be _at least_ 90% the same for it to be considered a match (this is lower than Licensee, which uses 98%, but experiments against .NET showed it was better to be a bit looser), so there is still some potential misses.
+`delice` also supports doing this via the `--check-license-content` flag. When provided `delice` will download the contents of the `licenseUrl` in the nuspec and compare it to known templates stored within itself. The comparison requires that the license and template be _at least_ 90% the same for it to be considered a match (this is lower than Licensee, which uses 98%, but experiments against .NET showed it was better to be a bit looser), so there is still some potential misses.
 
 Also, only certain license templates are stored within `delice`, but feel free to add more via PR's.
 
