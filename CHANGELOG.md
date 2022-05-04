@@ -1,5 +1,12 @@
 # Changelog for `dotnet-delice`
 
+## [1.7.1] - 2022-05-04
+
+### Changed
+
+- Merged PR #31 to fix readme
+- Fixed #32
+
 ## [1.7.0] - 2021-12-14
 
 ### Changed
