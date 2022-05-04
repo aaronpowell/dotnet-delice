@@ -7,7 +7,7 @@ open Output
 
 let private prettyPrinter printable =
     colorprintfn "License Expression: $green[%s]" printable.Expression
-    colorprintfn "├── There are $yellow[%d] occurances of $green[%s]" printable.Count printable.Expression
+    colorprintfn "├── There are $yellow[%d] occurrences of $green[%s]" printable.Count printable.Expression
     printfn "├─┬ Conformance:"
     colorprintfn "│ ├── Is OSI Approved: $green[%b]" printable.IsOsi
     colorprintfn "│ ├── Is FSF Free/Libre: $green[%b]" printable.IsFsf
