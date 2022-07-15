@@ -71,6 +71,7 @@ let private buildLicenseFromPackage
     packagePath
     (pId: LocalPackageInfo)
     path
+    similarity
     =
     let licenseMetadata =
         { Type = None
@@ -123,7 +124,7 @@ let private buildLicenseFromPackage
     | license when license.Type = LicenseType.File ->
         match Path.Combine(path, packagePath, license.License.Replace('\\', Path.DirectorySeparatorChar))
               |> File.ReadAllText
-              |> findMatchingLicense
+              |> (findMatchingLicense similarity)
             with
         | Some licenseSpdx ->
             { licenseMetadata with
@@ -149,13 +150,14 @@ let getPackageLicense
     packageName
     packageVersion
     packageType
+    similarity
     =
     let identity =
         PackageIdentity(packageName, packageVersion)
 
     let checkLicenseContents' name url =
         if checkLicenseContent then
-            checkLicenseContents name url
+            checkLicenseContents similarity name url
         else
             None
 
@@ -180,3 +182,4 @@ let getPackageLicense
                 .ToLower())
             pId
             path
+            similarity

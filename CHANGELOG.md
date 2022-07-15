@@ -1,5 +1,11 @@
 # Changelog for `dotnet-delice`
 
+## [1.8.0]
+
+### Changed
+
+- The similarity for the Sørensen–Dice coefficient comparison to SPDX templates is now an argument that defaults to 0.9, available via `--similarity`
+
 ## [1.7.1] - 2022-05-04
 
 ### Changed
