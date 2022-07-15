@@ -32,6 +32,10 @@ jobs:
       - name: Generate packages
         run: dotnet fake run ./build.fsx --target CI
 
+      - name: Demonstrate against self
+        run: dotnet run
+        working-directory: ./src/DotNetDelice
+
       - name: Publish release packages
         uses: actions/upload-artifact@v1
         with:
