@@ -2,7 +2,9 @@ name: CI build
 
 env:
   OUTPUT_PATH: ${{ github.workspace }}/.nupkg
-  DOTNET_VERSION: "6.0.x"
+  DOTNET_VERSION: |
+    8.0.x
+    6.0.x
   GITHUB_SOURCE: "https://nuget.pkg.github.com/aaronpowell/index.json"
   CONFIGURATION: "Debug"
 
@@ -21,8 +23,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup Dotnet ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -54,8 +56,8 @@ jobs:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
 
-      - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
