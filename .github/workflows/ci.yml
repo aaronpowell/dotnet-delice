@@ -39,7 +39,7 @@ jobs:
         working-directory: ./src/DotNetDelice
 
       - name: Publish release packages
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
