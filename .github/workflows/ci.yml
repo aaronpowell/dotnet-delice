@@ -39,6 +39,8 @@ jobs:
         run: dotnet run --framework net9.0
         working-directory: ./src/DotNetDelice
 
+      - run: ls -la ${{ env.OUTPUT_PATH }}
+
       - name: Publish release packages
         uses: actions/upload-artifact@v4
         with:
