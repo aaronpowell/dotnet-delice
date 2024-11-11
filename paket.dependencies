@@ -1,4 +1,6 @@
-version 6.2.1
+source https://api.nuget.org/v3/index.json
+
+storage: none
 
 // [ FAKE GROUP ]
 group Build

@@ -1,15 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <PackageOutputPath>../../.nupkg</PackageOutputPath>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/aaronpowell/dotnet-delice.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <Title>DotNet Delice Licensing</Title>
+    <Title>.NET Delice Licensing</Title>
     <PackageDescription>Delice.Licensing is used to extract license information from .NET projects.</PackageDescription>
-    <Authors>aaron.powell</Authors>
-    <PackageReleaseNotes>@releaseNotes@</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MemoryLogger.fs" />
@@ -28,8 +20,9 @@
     <Compile Include="LicenseBuilder.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="4.0.1" />
-    <PackageReference Include="NuGet.ProjectModel" Version="5.9.0" />
+    <PackageReference Include="FSharp.Data" Version="6.4.0" />
+    <PackageReference Include="NuGet.ProjectModel" Version="6.11.1" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
   </ItemGroup>
+
 </Project>

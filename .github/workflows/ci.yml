@@ -1,10 +1,12 @@
 name: CI build
 
 env:
-  OUTPUT_PATH: ${{ github.workspace }}/.nupkg
-  DOTNET_VERSION: "6.0.x"
+  OUTPUT_PATH: ${{ github.workspace }}/nuget
+  DOTNET_VERSION: |
+    8.0.x
+    6.0.x
+    9.0.x
   GITHUB_SOURCE: "https://nuget.pkg.github.com/aaronpowell/index.json"
-  CONFIGURATION: "Debug"
 
 on:
   push:
@@ -17,30 +19,35 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: CI
+    env:
+      DOTNET_CONFIGURATION: Release
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup Dotnet ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dotnet tools
-        run: dotnet tool restore
-
-      - name: Generate packages
-        run: dotnet fake run ./build.fsx --target CI
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration ${{ env.DOTNET_CONFIGURATION }}
+      - name: Publish NuGet package
+        run: dotnet pack --no-build -c ${{ env.DOTNET_CONFIGURATION }} -o ${{ env.OUTPUT_PATH }} -p:VersionSuffix='alpha.${{ github.run_number }}'
 
       - name: Demonstrate against self
-        run: dotnet run
+        run: dotnet run --framework net9.0
         working-directory: ./src/DotNetDelice
 
+      - run: ls -la ${{ env.OUTPUT_PATH }}
+
       - name: Publish release packages
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: packages
-          path: ${{ env.OUTPUT_PATH }}
+          path: ${{ env.OUTPUT_PATH }}/**
 
   publish-github:
     needs: build
@@ -49,13 +56,13 @@ jobs:
       name: GitHub Packages
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
 
-      - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
