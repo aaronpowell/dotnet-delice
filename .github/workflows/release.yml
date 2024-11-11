@@ -44,67 +44,11 @@ jobs:
 
       - run: echo "tag=${GITHUB_REF##*/v}" >> $GITHUB_ENV
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: false
-          body_path: ${{ env.OUTPUT_PATH }}/changelog.md
-      - run: echo ${{ steps.create_release.outputs.id }} >> release.txt
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-            name: release_id
-            path: release.txt
-
-      - name: Upload NuGet package
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ${{ env.OUTPUT_PATH }}/dotnet-delice.${{ env.tag }}.nupkg
-          asset_name: dotnet-delice.${{ env.tag }}.nupkg
-          asset_content_type: application/zip
-
-      - name: Upload NuGet package (Licensing)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ${{ env.OUTPUT_PATH }}/DotNetDelice.Licensing.${{ env.tag }}.nupkg
-          asset_name: DotNetDelice.Licensing.${{ env.tag }}.nupkg
-          asset_content_type: application/zip
-
-  publish-release:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: Release
-
-    steps:
-      - name: Download package
-        uses: actions/download-artifact@v4
-        with:
-            name: release_id
-      - run: echo "release_id=$(cat release.txt)" >> $GITHUB_ENV
-      - name: Publish release
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: process.env.release_id,
-              draft: false
-            })
+          files: |
+            ${{ env.OUTPUT_PATH }}
 
   publish-github:
     needs: publish-release
