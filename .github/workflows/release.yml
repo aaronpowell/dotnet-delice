@@ -49,7 +49,7 @@ jobs:
             ${{ env.OUTPUT_PATH }}
 
   publish-github:
-    needs: publish-release
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: GitHub Packages
@@ -70,7 +70,7 @@ jobs:
         working-directory: ${{ env.OUTPUT_PATH }}
 
   publish-nuget:
-    needs: publish-release
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: NuGet
