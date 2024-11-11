@@ -42,9 +42,7 @@ jobs:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
 
-      - run: echo "tag=${GITHUB_REF##*/v}" >> $GITHUB_ENV
-
-            - name: Release
+      - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
