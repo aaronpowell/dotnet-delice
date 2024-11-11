@@ -1,5 +1,12 @@
 # Changelog for `dotnet-delice`
 
+## [2.0.0] - Unreleased
+
+### Changed
+
+- Updated to .NET 8 and 9
+- Dependency updates
+
 ## [1.8.0]
 
 ### Changed

@@ -22,7 +22,7 @@
   "features": {
     "ghcr.io/devcontainers/features/dotnet:2": {
       "version": "8.0",
-      "additionalVersions": "9.0"
+      "additionalVersions": "6.0, 9.0"
     }
   }
 }

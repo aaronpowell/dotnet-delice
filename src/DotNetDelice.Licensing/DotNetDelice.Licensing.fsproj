@@ -28,8 +28,14 @@
     <Compile Include="LicenseBuilder.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="4.0.1" />
-    <PackageReference Include="NuGet.ProjectModel" Version="5.9.0" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
+    <PackageReference Include="FSharp.Data" Version="6.4.0" />
+    <PackageReference Include="NuGet.ProjectModel" Version="6.11.1" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
 </Project>

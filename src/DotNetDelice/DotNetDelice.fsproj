@@ -25,10 +25,11 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BlackFox.ColoredPrintf" Version="1.0.3" />
+    <PackageReference Include="BlackFox.ColoredPrintf" Version="2.0.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetDelice.Licensing\DotNetDelice.Licensing.fsproj" />
   </ItemGroup>
+
 </Project>

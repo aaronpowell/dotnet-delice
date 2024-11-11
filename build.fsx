@@ -62,22 +62,22 @@ Target.create
                       Common = c.Common |> DotNet.Options.withAdditionalArgs args })
             sln)
 
-Target.create
-    "Publish"
-    (fun ctx ->
-        let changelog = getChangelog ()
+// Target.create
+//     "Publish"
+//     (fun ctx ->
+//         let changelog = getChangelog ()
 
-        let args =
-            [ sprintf "/p:PackageVersion=%s" (getVersionNumber changelog (ctx.Context.AllExecutingTargets))
-              "--no-restore"
-              "--no-build" ]
+//         let args =
+//             [ sprintf "/p:PackageVersion=%s" (getVersionNumber changelog (ctx.Context.AllExecutingTargets))
+//               "--no-restore"
+//               "--no-build" ]
 
-        DotNet.publish
-            (fun c ->
-                { c with
-                      Configuration = configuration (ctx.Context.AllExecutingTargets)
-                      Common = c.Common |> DotNet.Options.withAdditionalArgs args })
-            sln)
+//         DotNet.publish
+//             (fun c ->
+//                 { c with
+//                       Configuration = configuration (ctx.Context.AllExecutingTargets)
+//                       Common = c.Common |> DotNet.Options.withAdditionalArgs args })
+//             sln)
 
 Target.create
     "Package"
@@ -126,14 +126,14 @@ Target.create "CI" ignore
 "Clean" ==> "Restore" ==> "Build" ==> "Default"
 
 "Default"
-==> "Publish"
+// ==> "Publish"
 ==> "Test"
 ==> "Package"
 ==> "Changelog"
 ==> "Release"
 
 "Default"
-==> "Publish"
+// ==> "Publish"
 ==> "Test"
 ==> "Package"
 ==> "Changelog"
