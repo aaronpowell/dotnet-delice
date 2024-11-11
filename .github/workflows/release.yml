@@ -1,7 +1,7 @@
 name: Release build
 
 env:
-  OUTPUT_PATH: ${{ github.workspace }}/.nupkg
+  OUTPUT_PATH: ${{ github.workspace }}/nuget
   DOTNET_VERSION: |
     8.0.x
     6.0.x
