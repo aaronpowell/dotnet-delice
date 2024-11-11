@@ -36,7 +36,7 @@ jobs:
         run: dotnet fake run ./build.fsx --target CI
 
       - name: Demonstrate against self
-        run: dotnet run
+        run: dotnet run --framework net9.0
         working-directory: ./src/DotNetDelice
 
       - name: Publish release packages
