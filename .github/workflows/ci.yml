@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: packages
-          path: ${{ env.OUTPUT_PATH }}
+          path: ${{ env.OUTPUT_PATH }}/**
 
   publish-github:
     needs: build
