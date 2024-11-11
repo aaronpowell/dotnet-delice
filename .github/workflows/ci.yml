@@ -5,6 +5,7 @@ env:
   DOTNET_VERSION: |
     8.0.x
     6.0.x
+    9.0.x
   GITHUB_SOURCE: "https://nuget.pkg.github.com/aaronpowell/index.json"
   CONFIGURATION: "Debug"
 
