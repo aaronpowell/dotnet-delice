@@ -2,33 +2,27 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.209.3/containers/dotnet
 {
   "name": "dotnet-delice",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      // Update 'VARIANT' to pick a .NET Core version: 3.1, 5.0, 6.0
-      // Append -bullseye or -focal to pin to an OS version.
-      "VARIANT": "6.0",
-      // Options
-      "NODE_VERSION": "none"
+  "image": "mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
+  "customizations": {
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "Ionide.Ionide-fsharp",
+        "paolodellepiane.fantomas-fmt",
+        "ms-dotnettools.csharp",
+        "EditorConfig.EditorConfig"
+      ]
     }
   },
-
-  // Set *default* container specific settings.json values on container create.
-  "settings": {},
-
-  // Add the IDs of extensions you want installed when the container is created.
-  "extensions": [
-    "Ionide.Ionide-fsharp",
-    "paolodellepiane.fantomas-fmt",
-    "ms-dotnettools.csharp",
-    "EditorConfig.EditorConfig"
-  ],
-
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
-
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "dotnet tool restore && dotnet restore",
-
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "8.0",
+      "additionalVersions": "9.0"
+    }
+  }
 }
