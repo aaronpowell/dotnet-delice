@@ -1,20 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
-    <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-delice</ToolCommandName>
     <AssemblyName>dotnet-delice</AssemblyName>
-    <PackageOutputPath>../../.nupkg</PackageOutputPath>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/aaronpowell/dotnet-delice.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <Title>DotNet Delice</Title>
+    <Title>.NET Delice</Title>
     <PackageDescription>Delice is a dotnet tool that will list out the license information of the packages that your project depends on to help you get a better idea of what licenses are in use by your project.</PackageDescription>
-    <Authors>aaron.powell</Authors>
-    <PackageReleaseNotes>@releaseNotes@</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="OptionConverter.fs" />

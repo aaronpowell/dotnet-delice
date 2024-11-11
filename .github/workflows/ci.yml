@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: CI
+    env:
+      DOTNET_CONFIGURATION: Release
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -29,11 +31,12 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dotnet tools
-        run: dotnet tool restore
-
-      - name: Generate packages
-        run: dotnet fake run ./build.fsx --target CI
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration ${{ env.DOTNET_CONFIGURATION }}
+      - name: Publish NuGet package
+        run: dotnet pack --no-build -c ${{ env.DOTNET_CONFIGURATION }} -o ${{ env.OUTPUT_PATH }} -p:VersionSuffix='alpha.${{ github.run_number }}'
 
       - name: Demonstrate against self
         run: dotnet run --framework net9.0
