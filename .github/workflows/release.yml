@@ -108,7 +108,7 @@ jobs:
 
     steps:
       - name: Download package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
             name: release_id
       - run: echo "release_id=$(cat release.txt)" >> $GITHUB_ENV
@@ -131,7 +131,7 @@ jobs:
       name: GitHub Packages
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
@@ -152,7 +152,7 @@ jobs:
       name: NuGet
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: packages
           path: ${{ env.OUTPUT_PATH }}
