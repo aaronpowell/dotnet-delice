@@ -16,6 +16,7 @@ let (|Proj|_|) arg =
         String.Compare(str, arg, StringComparison.OrdinalIgnoreCase) = 0
 
     if c ".sln" then Some()
+    elif c ".slnx" then Some()
     elif c ".csproj" then Some()
     elif c ".fsproj" then Some()
     else None
@@ -28,7 +29,7 @@ let findProject path =
         | Proj -> Path.GetFullPath path
         | _ -> failwith "Path is not a valid project or solution path"
     | (_, true) ->
-        match Directory.GetFiles(path, "*.sln") with
+        match Directory.GetFiles(path, "*.sln") |> Array.append <| Directory.GetFiles(path, "*.slnx") with
         | [| sln |] -> Path.GetFullPath sln
         | [||] ->
             match
@@ -87,7 +88,7 @@ let getLicensesForTool checkGitHub token checkLicenseContent (projectSpec: Packa
 type Cli() =
 
     [<Argument(0,
-               Description = "The path to a .sln, .csproj or .fsproj file, or to a directory containing a .NET Core solution/project. If none is specified, the current directory will be used.")>]
+               Description = "The path to a .sln, .slnx, .csproj or .fsproj file, or to a directory containing a .NET Core solution/project. If none is specified, the current directory will be used.")>]
     member val Path = "" with get, set
 
     [<Option(Description = "Output result as JSON")>]
