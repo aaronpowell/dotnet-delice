@@ -1,5 +1,11 @@
 # Changelog for `dotnet-delice`
 
+## [2.1.0] - 2025-03-24
+
+### Added
+
+- Support for `slnx` files in addition to `sln` files. This allows for the discovery of licenses in projects that use the new `slnx` format.
+
 ## [2.0.0] - 2024-11-11
 
 ### Changed
