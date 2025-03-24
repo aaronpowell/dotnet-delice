@@ -17,7 +17,7 @@ dotnet tool install -g dotnet-delice
 You can then use it like so:
 
 ```
-dotnet delice [folder, sln, csproj, fsproj]
+dotnet delice [folder, sln, slnx, csproj, fsproj]
 ```
 
 ## Commands
@@ -67,6 +67,10 @@ License Expression: MIT
 
 - Ability to filter for only a particular license
 - Anything you'd like? Open an [issue](https://github.com/aaronpowell/dotnet-delice/issues) 😁
+
+# Slnx support
+
+XML-based solution file format (slnx) are supported, but you need at least a `.NET 9.0.201 SDK` which provides support for interacting with these files.
 
 # Undetermined Licenses
 
